@@ -9,8 +9,8 @@ var app = express();
 app.use('/public',express.static('public'));
 
 const s3 = new AWS.S3({
-    accessKeyId: "AKIAI4YXVKNLMJDWWJTQ",
-    secretAccessKey: "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"
+    accessKeyId: "",
+    secretAccessKey: ""
 });
 
 var upload = multer({
@@ -28,7 +28,7 @@ const con = mysql.createPool({
   host: 'localhost',
   port: '3306',
   user: 'root',
-  password: 'hys10130857',
+  password: '[hys10130857]',
   database: "person_project"
 })//連接到mySQL
 
