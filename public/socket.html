@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel=stylesheet type="text/css" href="./socket.css">
+
+</head>
+<body>
+<div class = "body">
+	<div class = "profile_map">
+		<div class = "profile">
+		
+		</div>
+		<div id="map">
+		
+		</div>	
+	</div>
+	<div class = "chatroom">
+		<div class="chats">
+		</div>
+		<div class="message">
+			<input id="name" type="text" placeholder="your name" />
+			<input id="content" type="text" placeholder="input the message" />
+			<button type="button">送出</button>
+		</div>
+	</div>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/locale/zh-tw.js'></script>
+<script>
+//google map code start
+console.log("開始執行map script");
+var map;
+function initMap() {
+	console.log("執行init map");
+	  map = new google.maps.Map(document.getElementById('map'), {
+		center: {lat: -34.397, lng: 150.644},
+		zoom: 8
+	  });
+}
+//googlt map code end
+//socket code start
+console.log("開始執行socket script");
+socket = io.connect();
+document.querySelector('button').addEventListener('click', function(){
+	Send();
+});
+
+function Send() {
+
+    let name = document.querySelector('#name').value;
+    let content = document.querySelector('#content').value;
+    if (!content && !name) {
+        alert('請輸入姓名和訊息');
+        return;
+    }
+    let data = {
+        name: name,
+        content: content,
+    };
+	//傳訊息給後端
+	console.log(data);
+    socket.emit('message', data);
+    document.querySelector('#content').value = '';
+ 
+}
+
+//顯示歷史訊息
+socket.on('history', function(obj){
+    if (obj.length > 0) {
+        appendData(obj);
+    }
+});
+
+//收到後端傳來的訊息如何處理
+socket.on('message', (obj) => {
+    console.log(obj);
+    appendData([obj]);
+});
+
+function appendData(obj){
+	obj.forEach(function(element){
+		var chat = document.createElement("div");
+		chat.className = "chat";
+		var group = document.createElement("div");
+		group.className = "group";
+		var name = document.createElement("div");
+		name.className = "name";
+		var content = document.createElement("div");
+		content.className = "content";
+		var element_name = document.createTextNode(element.name);
+		var element_content = document.createTextNode(element.content);
+		var time = document.createElement("div");
+		time.className = "time";
+		var element_time = document.createTextNode(moment(element.time).fromNow());
+		time.appendChild(element_time);
+		name.appendChild(element_name);
+		content.appendChild(element_content);
+		group.appendChild(name);
+		group.appendChild(content);
+		chat.appendChild(group);
+		chat.appendChild(time);
+		document.getElementsByClassName("chats")[0].appendChild(chat);
+	});
+	scrollWindow();
+}
+
+function scrollWindow(){
+    let h = document.querySelector('.chats');//回傳第一個找到的class
+    h.scrollTo(0, h.scrollHeight);
+}
+//socket code end
+
+</script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&callback=initMap"></script>
+</body>
+</html>
