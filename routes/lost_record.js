@@ -9,8 +9,8 @@ var app = express();
 app.use('/public',express.static('public'));
 
 const s3 = new AWS.S3({
-    accessKeyId: "AKIAI4YXVKNLMJDWWJTQ",
-    secretAccessKey: "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"
+    accessKeyId: "",
+    secretAccessKey: ""
 });
 
 var upload = multer({
@@ -28,12 +28,12 @@ const con = mysql.createPool({
   host: 'localhost',
   port: '3306',
   user: 'root',
-  password: 'hys10130857',
+  password: '[hys10130857]',
   database: "person_project"
 })//連接到mySQL
 
-app.post('/', upload.single('image'), function(req, res){
-	console.log("lost_record api: "+req.file.key);
+app.post('/', upload.single('image'), async function(req, res){
+	var lost_data_id;
 	var lost_data = {
 		name: req.body.pet_name,
 		picture: req.file.key,
@@ -45,17 +45,35 @@ app.post('/', upload.single('image'), function(req, res){
 		lost_time: req.body.lost_time,
 		other: req.body.other
 	}
-	con.query("INSERT INTO lost_pet set?",lost_data,function(err, result){
+	const insert_lost_pet_promise = new Promise((resolve, reject) => {
+		con.query("INSERT INTO lost_pet set?",lost_data,function(err, result){
+			if(err){
+				console.log("lost_record api(post): \n");
+				console.log(err);
+			}
+			else
+			{
+				resolve(result);
+				lost_data_id = result.isertId;
+				console.log("lost_record api: db新增走失紀錄成功");
+			}
+		});
+	})
+	const insert_lost_pet = await insert_lost_pet_promise;
+	//是否要做transaction?
+	var create_chat_table = "CREATE TABLE socket"+insert_lost_pet.insertId+"(id bigint(20) NOT NULL AUTO_INCREMENT, name varchar(45) DEFAULT NULL, content varchar(45) DEFAULT NULL, time bigint(20) DEFAULT NULL, PRIMARY KEY (id));";
+	con.query(create_chat_table,function(err, result){
 		if(err){
-			console.log("lost_record api(post): \n");
+			console.log("lost_record api(post, create chat table): \n");
 			console.log(err);
 		}
 		else
 		{
-			console.log("lost_record api: db新增走失紀錄成功");
+			console.log("lost_record api: db新增聊天室table成功");
+			res.send("新增走失紀錄成功!");
 		}
-	});
-
+	});	
+	
 });
 
 app.get('/', async function(req, res){
