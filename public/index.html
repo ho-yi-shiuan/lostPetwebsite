@@ -30,7 +30,12 @@
 	<div id = "black"></div>
 	</header>
 	<div class="body">
-		<div class="lost_pets"></div>
+		<div class="lost_pets">
+			<div class="container">
+				<a href="/new_lost.html"><img class="image" src="/images/add.png"></a>
+				<div class="name">點此新增</div>
+			</div>
+		</div>
 	</div>
 	
 <script>
@@ -46,7 +51,7 @@
 				var container = document.createElement("div");
 				container.className = "container";
 				var image_container = document.createElement("a");
-				image_container.href = "http://localhost:3000/room?id="+pets.data[i].id;
+				image_container.href = "/room?id="+pets.data[i].id;
 				var image = document.createElement("img");
 				image.className = "image";
 				image.src = pets.data[i].picture;
@@ -68,7 +73,8 @@
 				container.appendChild(name);
 				container.appendChild(location);
 				container.appendChild(time);
-				document.getElementsByClassName("lost_pets")[0].appendChild(container);				
+				var exist_container = document.getElementsByClassName("container")[0];
+				document.getElementsByClassName("lost_pets")[0].insertBefore(container, exist_container);				
 			}
 		}
 	}
