@@ -93,6 +93,7 @@ app.get('/', async function(req, res){
 	var lost_record_array = [];
 	for(i=0; i<lost_record.length; i++){
 		var lost_data_object = {
+			id: lost_record[i].id,
 			name: lost_record[i].name,
 			picture: picture_s3_url+lost_record[i].picture,
 			gender: lost_record[i].gender,
