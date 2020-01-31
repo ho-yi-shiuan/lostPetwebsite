@@ -33,8 +33,11 @@ const con = mysql.createPool({
 })//連接到mySQL
 
 app.post('/', upload.single('image'), async function(req, res){
+	//待辦:
+	//1. 是否要做transaction?
 	var lost_data_id;
 	var lost_data = {
+		category: req.body.category,
 		name: req.body.pet_name,
 		picture: req.file.key,
 		gender: req.body.pet_gender,
@@ -60,7 +63,6 @@ app.post('/', upload.single('image'), async function(req, res){
 		});
 	})
 	const insert_lost_pet = await insert_lost_pet_promise;
-	//是否要做transaction?
 	var create_chat_table = "CREATE TABLE socket"+insert_lost_pet.insertId+"(id bigint(20) NOT NULL AUTO_INCREMENT, name varchar(45) DEFAULT NULL, content varchar(45) DEFAULT NULL, time bigint(20) DEFAULT NULL, PRIMARY KEY (id));";
 	con.query(create_chat_table,function(err, result){
 		if(err){

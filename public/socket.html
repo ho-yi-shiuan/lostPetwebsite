@@ -8,10 +8,12 @@
 
 </head>
 <body>
+<span style="font-family:Microsoft JhengHei;">
 <div class = "body">
 	<div class = "profile_map">
 		<div class = "profile">
-		
+			<div class = "picture"></div>
+			<div class = "information"></div>
 		</div>
 		<div id="map">
 		
@@ -21,7 +23,6 @@
 		<div class="chats">
 		</div>
 		<div class="message">
-			<input id="name" type="text" placeholder="your name" />
 			<input id="content" type="text" placeholder="input the message" />
 			<button type="button">送出</button>
 		</div>
@@ -30,89 +31,152 @@
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/locale/zh-tw.js'></script>
 <script>
-//google map code start
-console.log("開始執行map script");
-var map;
-function initMap() {
-	console.log("執行init map");
-	  map = new google.maps.Map(document.getElementById('map'), {
-		center: {lat: -34.397, lng: 150.644},
-		zoom: 8
-	  });
-}
-//googlt map code end
-//socket code start
-console.log("開始執行socket script");
-socket = io.connect();
-document.querySelector('button').addEventListener('click', function(){
-	Send();
-});
-
-function Send() {
-
-    let name = document.querySelector('#name').value;
-    let content = document.querySelector('#content').value;
-    if (!content && !name) {
-        alert('請輸入姓名和訊息');
-        return;
-    }
-    let data = {
-        name: name,
-        content: content,
-    };
-	//傳訊息給後端
-	console.log(data);
-    socket.emit('message', data);
-    document.querySelector('#content').value = '';
- 
-}
-
-//顯示歷史訊息
-socket.on('history', function(obj){
-    if (obj.length > 0) {
-        appendData(obj);
-    }
-});
-
-//收到後端傳來的訊息如何處理
-socket.on('message', (obj) => {
-    console.log(obj);
-    appendData([obj]);
-});
-
-function appendData(obj){
-	obj.forEach(function(element){
-		var chat = document.createElement("div");
-		chat.className = "chat";
-		var group = document.createElement("div");
-		group.className = "group";
-		var name = document.createElement("div");
-		name.className = "name";
-		var content = document.createElement("div");
-		content.className = "content";
-		var element_name = document.createTextNode(element.name);
-		var element_content = document.createTextNode(element.content);
-		var time = document.createElement("div");
-		time.className = "time";
-		var element_time = document.createTextNode(moment(element.time).fromNow());
-		time.appendChild(element_time);
-		name.appendChild(element_name);
-		content.appendChild(element_content);
-		group.appendChild(name);
-		group.appendChild(content);
-		chat.appendChild(group);
-		chat.appendChild(time);
-		document.getElementsByClassName("chats")[0].appendChild(chat);
+	//google map code start
+	console.log("開始執行map script");
+	var map;
+	function initMap() {
+		console.log("執行init map");
+		  map = new google.maps.Map(document.getElementById('map'), {
+			center: {lat: -34.397, lng: 150.644},
+			zoom: 8
+		  });
+	}
+	//googlt map code end
+	
+	//進入頁面需先輸入名稱 start
+	var user_name = prompt("請輸入姓名");
+	//進入頁面需先輸入名稱 end
+	
+	//socket code start
+	console.log("開始執行socket script");
+	socket = io.connect();
+	socket.on('connect', function () {
+		socket.emit('join', user_name);
 	});
-	scrollWindow();
-}
+	document.querySelector('button').addEventListener('click', function(){
+		Send();
+	});
 
-function scrollWindow(){
-    let h = document.querySelector('.chats');//回傳第一個找到的class
-    h.scrollTo(0, h.scrollHeight);
-}
-//socket code end
+	function Send() {
 
+		//let name = document.querySelector('#name').value;
+		let content = document.querySelector('#content').value;
+		if (!content && !name) {
+			alert('請輸入訊息');
+			return;
+		}
+		let data = {
+			name: user_name,
+			content: content,
+		};
+		//傳訊息給後端
+		console.log(data);
+		socket.emit('message', data);
+		document.querySelector('#content').value = '';
+	 
+	}
+
+	//顯示歷史訊息
+	socket.on('history', function(obj){
+		console.log("收到後端歷史訊息");
+		if (obj.length > 0) {
+			appendData(obj);
+		}
+	});
+
+	//收到後端傳來的訊息如何處理
+	socket.on('message', (obj) => {
+		console.log(obj);
+		appendData([obj]);
+	});
+
+	function appendData(obj){
+		obj.forEach(function(element){
+			var chat = document.createElement("div");
+			chat.className = "chat";
+			var group = document.createElement("div");
+			group.className = "group";
+			var name = document.createElement("div");
+			name.className = "name";
+			var content = document.createElement("div");
+			content.className = "content";
+			var element_name = document.createTextNode(element.name);
+			var element_content = document.createTextNode(element.content);
+			var time = document.createElement("div");
+			time.className = "time";
+			var element_time = document.createTextNode(moment(element.time).fromNow());
+			time.appendChild(element_time);
+			name.appendChild(element_name);
+			content.appendChild(element_content);
+			group.appendChild(name);
+			group.appendChild(content);
+			chat.appendChild(group);
+			chat.appendChild(time);
+			document.getElementsByClassName("chats")[0].appendChild(chat);
+		});
+		scrollWindow();
+	}
+
+	function scrollWindow(){
+		let h = document.querySelector('.chats');//回傳第一個找到的class
+		h.scrollTo(0, h.scrollHeight);
+	}
+	//socket code end
+	//ajax code start
+	let urlParams = new URLSearchParams(window.location.search);
+	let id = urlParams.get('id')
+	const xhr = new XMLHttpRequest();
+	var url = "/lost_detail?id="+id;
+	xhr.open("get", url);
+	xhr.onload = function(){
+		var detail = JSON.parse(this.response);
+		var picture_file = document.createElement("img");
+		picture_file.className = "picture_file";
+		picture_file.src = detail.picture;
+		document.getElementsByClassName("picture")[0].appendChild(picture_file);
+		var name = document.createElement("name");
+		name.className = "name";
+		var pet_name = document.createTextNode("姓名: "+detail.name);
+		name.appendChild(pet_name);
+		document.getElementsByClassName("information")[0].appendChild(name);
+		var gender = document.createElement("div");
+		gender.className = "gender";
+		var pet_gender = document.createTextNode("性別: "+detail.gender);
+		gender.appendChild(pet_gender);
+		document.getElementsByClassName("information")[0].appendChild(gender);
+		var age = document.createElement("div");
+		age.className = "age";
+		var pet_age = document.createTextNode("年齡: "+detail.age);
+		age.appendChild(pet_age);
+		document.getElementsByClassName("information")[0].appendChild(age);
+		var breed = document.createElement("div");
+		breed.className = "breed";
+		var pet_breed = document.createTextNode("品種: "+detail.breed);
+		breed.appendChild(pet_breed);
+		document.getElementsByClassName("information")[0].appendChild(breed);
+		var color = document.createElement("div");
+		color.className = "color";
+		var pet_color = document.createTextNode("顏色: "+detail.color);
+		color.appendChild(pet_color);
+		document.getElementsByClassName("information")[0].appendChild(color);
+		var lost_location = document.createElement("div");
+		lost_location.className = "lost_location";
+		var pet_lost_location = document.createTextNode("走失地點: "+detail.lost_location);
+		lost_location.appendChild(pet_lost_location);
+		document.getElementsByClassName("information")[0].appendChild(lost_location);
+		var lost_time = document.createElement("div");
+		lost_time.className = "lost_time";
+		var pet_lost_time = document.createTextNode("走失時間: "+detail.lost_time);
+		lost_time.appendChild(pet_lost_time);
+		document.getElementsByClassName("information")[0].appendChild(lost_time);
+		var other = document.createElement("div");
+		other.className = "other";
+		var pet_other = document.createTextNode("其他: "+detail.other);
+		other.appendChild(pet_other);
+		document.getElementsByClassName("information")[0].appendChild(other);
+	}
+	xhr.send();
+	//ajax code end
 </script>
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&callback=initMap"></script>
 </body>
