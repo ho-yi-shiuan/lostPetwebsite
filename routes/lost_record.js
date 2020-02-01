@@ -34,7 +34,7 @@ const con = mysql.createPool({
 
 app.post('/', upload.single('image'), async function(req, res){
 	//待辦:
-	//1. 是否要做transaction?
+	//是否要做transaction?
 	var lost_data_id;
 	var lost_data = {
 		category: req.body.category,

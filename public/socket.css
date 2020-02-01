@@ -23,7 +23,7 @@ a {
 	border-color:#ADA142;
 	border-width:3px;
 	border-style:solid;
-	margin: 5px 5px 20px 5px;
+	margin: 5px 5px 10px 5px;
 	display: flex;
 }
 
@@ -39,9 +39,17 @@ a {
 	height:100%;
 }
 
-#map {
+.map_mark {
+	height:55%;
+	border-color:#ADA142;
+	border-width:3px;
+	border-style:solid;
+	margin: 0px 5px 20px 5px;
+	display: flex;	
+}
+
+#map, .mark{
 	width: 50%;
-	height:50%;
 	border-color:#ADA142;
 	border-width:3px;
 	border-style:solid;

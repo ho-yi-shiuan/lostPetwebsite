@@ -17,6 +17,7 @@ app.use(express.static("public"));// 待改善: 訊息按enter可直接發送
 //新增走失紀錄api
 app.use('/lost_record', require('./routes/lost_record'));
 app.use('/lost_detail', require('./routes/lost_detail'));
+app.use('/lost_mark', require('./routes/lost_mark'));
 
 //各房間的user list
 var roomInfo = {};
@@ -65,7 +66,6 @@ io.on('connection', async function(socket){
 		//回傳給前端
 		io.to(socketid).emit("message", obj);
 	});
-
 
 	// 當發生離線事件
 	socket.on("disconnect", function(){

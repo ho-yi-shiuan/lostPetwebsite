@@ -15,9 +15,17 @@
 			<div class = "picture"></div>
 			<div class = "information"></div>
 		</div>
-		<div id="map">
-		
-		</div>	
+		<div class = "map_mark">
+			<div id="map"></div>
+			<div class = "mark">
+				<form action="/lost_mark" method="POST">
+				若發現該寵物出現, 請在以下回報地點: </br>
+				請輸入地址: </br><input type="text" name="insert_mark" placeholder = "ex: 臺北市信義區信義路五段7號"></input></br>
+				請輸入發現時間等其他資訊: </br><textarea name="insert_info" type = "textarea" placeholder = "ex: 1/10上午10點發現, 與其他流浪犬集體出現" style="width:250px;height:50px;"></textarea></br>			
+				<input type="submit" value="送出">
+				</form>
+			</div>
+		</div>
 	</div>
 	<div class = "chatroom">
 		<div class="chats">
@@ -31,17 +39,20 @@
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/locale/zh-tw.js'></script>
 <script>
+	//ajax send mark code start
+	
+	//ajax send mark code end
 	//google map code start
 	console.log("開始執行map script");
 	var map;
 	function initMap() {
 		console.log("執行init map");
-		  map = new google.maps.Map(document.getElementById('map'), {
-			center: {lat: -34.397, lng: 150.644},
-			zoom: 8
-		  });
+		geocoder = new google.maps.Geocoder();
+		map = new google.maps.Map(document.getElementById('map'), {
+			zoom: 16
+		});
 	}
-	//googlt map code end
+	//googlt map code end	
 	
 	//進入頁面需先輸入名稱 start
 	var user_name = prompt("請輸入姓名");
@@ -58,8 +69,6 @@
 	});
 
 	function Send() {
-
-		//let name = document.querySelector('#name').value;
 		let content = document.querySelector('#content').value;
 		if (!content && !name) {
 			alert('請輸入訊息');
@@ -73,7 +82,6 @@
 		console.log(data);
 		socket.emit('message', data);
 		document.querySelector('#content').value = '';
-	 
 	}
 
 	//顯示歷史訊息
@@ -174,6 +182,20 @@
 		var pet_other = document.createTextNode("其他: "+detail.other);
 		other.appendChild(pet_other);
 		document.getElementsByClassName("information")[0].appendChild(other);
+		//google map mark code start
+		var address = detail.lost_location;
+		geocoder.geocode( { 'address': address}, function(results, status) {
+			if (status == 'OK') {
+				map.setCenter(results[0].geometry.location);
+				var marker = new google.maps.Marker({
+					map: map,
+					position: results[0].geometry.location
+				});
+			} else {
+				console.log("地址轉換成經緯度並顯示: "+status);
+			}
+		});
+		//google map mark code end
 	}
 	xhr.send();
 	//ajax code end
