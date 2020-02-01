@@ -15,30 +15,54 @@ a {
 	border-color:#6C6024;
 	border-width:3px;
 	border-style:solid;
-	margin-right: 20px;
+	margin-right: 10px;
 }
 
 .profile {
 	height:40%;
 	border-color:#ADA142;
 	border-width:3px;
-	border-style:solid;	
+	border-style:solid;
+	margin: 5px 5px 10px 5px;
+	display: flex;
+}
+
+.picture, .information {
+	width: 50%;
+	border-color:#ADA142;
+	border-width:3px;
+	border-style:solid;
+	margin: 5px 5px 5px 5px;
+}
+
+.picture_file {
+	height:100%;
+}
+
+.map_mark {
+	height:55%;
+	border-color:#ADA142;
+	border-width:3px;
+	border-style:solid;
+	margin: 0px 5px 20px 5px;
+	display: flex;	
+}
+
+#map, .mark{
+	width: 50%;
+	border-color:#ADA142;
+	border-width:3px;
+	border-style:solid;
 	margin: 5px 5px 20px 5px;
 }
 
-#map {
+.chatroom {
 	width: 50%;
-	height:50%;
-	border-color:#ADA142;
-	border-width:3px;
-	border-style:solid;	
-	margin: 5px 5px 20px 5px;
 }
 
 .chats {
-  padding: 10px 5px;
   height: 80%;
-  width: 500px;
+  width: 100%;
   background: #eee;
   overflow-y: scroll;
 }
@@ -69,14 +93,10 @@ a {
   margin-top: 10px;
 }
 
-.message input {
+#content {
   padding: 0 5px;
   height: 25px;
   width: 300px;
-}
-
-.message input:first-child {
-  width: 80px;
 }
 
 .message button {
