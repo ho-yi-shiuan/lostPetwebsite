@@ -38,6 +38,8 @@ io.on('connection', async function(socket){
 				console.log(err);
 			}else{
 				console.log("select history message of room "+socketid+" successful!");
+				console.log("history message: ");
+				console.log(res);
 				resolve(res);
 			}
 		})

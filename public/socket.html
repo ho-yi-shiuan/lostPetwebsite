@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <link rel=stylesheet type="text/css" href="./socket.css">
-
 </head>
 <body>
 <span style="font-family:Microsoft JhengHei;">
@@ -18,14 +17,14 @@
 		<div class = "map_mark">
 			<div id="map"></div>
 			<div class = "mark">
-				<form action="/lost_mark" method="POST">
 				<b style="font-size:20px">←最近出沒地點</b></br>
-				黃色標記: 走失地點</br>
-				藍色標記: 回報出現地點(點擊標記可觀看回報相關資訊)</br></br>
-				<b>(若發現該寵物出現, 請在以下回報地點)</b></br>
-				請輸入地址: </br><input type="text" name="insert_mark" placeholder = "ex: 臺北市信義區信義路五段7號"></input></br>
-				請輸入發現時間等其他資訊: </br><textarea name="insert_info" type = "textarea" placeholder = "ex: 1/10上午10點發現, 與其他流浪犬集體出現" style="width:250px;height:50px;"></textarea></br>			
-				<input type="submit" value="送出">
+				<img src="/images/placeholder.png"> : 走失地點</br>
+				<img src="/images/pin.png"> : 回報出現地點(點擊標記可觀看回報相關資訊)</br></br>
+				<b style="font-size:16px">若發現該寵物出現, 請在以下回報地點</b></br>
+				請輸入地址: </br><input type="text" id="insert_mark" placeholder = "ex: 臺北市信義區信義路五段7號"></input>
+				<button id="select_current_spot">存取目前位置</button></br>
+				請輸入發現時間等其他資訊: </br><textarea id="insert_info" type = "textarea" placeholder = "ex: 1/10上午10點發現, 與其他流浪犬集體出現" style="width:250px;height:50px;"></textarea></br>			
+				<button id="submit_mark">送出</button>
 				</form>
 			</div>
 		</div>
@@ -35,16 +34,15 @@
 		</div>
 		<div class="message">
 			<input id="content" type="text" placeholder="input the message" />
-			<button type="button">送出</button>
+			<button id="submit_message" type="button">送出</button>
 		</div>
 	</div>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/locale/zh-tw.js'></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
 <script>
-	//ajax send mark code start
-	
-	//ajax send mark code end
 	//google map code start
 	console.log("開始執行map script");
 	var map;
@@ -52,7 +50,7 @@
 		console.log("執行init map");
 		geocoder = new google.maps.Geocoder();
 		map = new google.maps.Map(document.getElementById('map'), {
-			zoom: 16
+			zoom: 15
 		});
 	}
 	//googlt map code end	
@@ -67,7 +65,7 @@
 	socket.on('connect', function () {
 		socket.emit('join', user_name);
 	});
-	document.querySelector('button').addEventListener('click', function(){
+	document.getElementById("submit_message").addEventListener('click', function(){
 		Send();
 	});
 
@@ -185,7 +183,7 @@
 		var pet_other = document.createTextNode("其他: "+detail.other);
 		other.appendChild(pet_other);
 		document.getElementsByClassName("information")[0].appendChild(other);
-		//google map mark code start
+		//google map mark(db current mark) code start
 		var address = detail.lost_location;
 		geocoder.geocode( { 'address': address}, function(results, status) {
 			if (status == 'OK') {
@@ -204,16 +202,16 @@
 			}
 		});
 		for(i=0; i<detail.markers.length; i++){
+			let infowindow_content = detail.markers[i].marker_description;
 			geocoder.geocode( { 'address': detail.markers[i].marker_location}, function(results, status) {
 				if (status == 'OK') {
-				//console.log(detail.markers[i].marker_description);
 					var marker = new google.maps.Marker({
 						map: map,
 						position: results[0].geometry.location,//new google.maps.LatLng(22.991965, 120.202518),
 						icon: '/images/pin.png'
 					});
 					var infowindow = new google.maps.InfoWindow({
-						content: detail.markers[0].marker_description
+						content: infowindow_content
 					});
 					marker.addListener('click', function() {
 						infowindow.open(map, marker);
@@ -223,11 +221,62 @@
 				}
 			});
 		}
-
-		//google map mark code end
+		//google map mark(db current mark) code end
 	}
 	xhr.send();
 	//ajax code end
+	//存取目前位置code start
+	document.getElementById("select_current_spot").addEventListener('click', function(){
+		get_spot();
+	});
+	function get_spot(){
+		navigator.geolocation.getCurrentPosition(function(position) {
+			var pos = position.coords.latitude+", "+position.coords.longitude;
+			console.log(pos);
+			document.getElementById("insert_mark").value = pos;
+		});
+	}
+	//存取目前位置code end
+	//ajax send mark code start
+	document.getElementById("submit_mark").addEventListener('click', function(){
+		insert_mark();
+	});
+	function insert_mark(){
+		var new_mark = {
+			insert_mark:document.getElementById("insert_mark").value,
+			insert_info:document.getElementById("insert_info").value
+		}
+		$.ajax({
+			contentType :"application/json",
+			type: "POST",
+			url: "/lost_mark",
+			data: JSON.stringify(new_mark),
+			success: function(res)
+				{
+					document.getElementById("insert_mark").value = "";
+					insert_info:document.getElementById("insert_info").value = "";
+					geocoder.geocode( { 'address': res.location}, function(results, status) {
+						if (status == 'OK') {
+							var marker = new google.maps.Marker({
+								map: map,
+								position: results[0].geometry.location,//new google.maps.LatLng(22.991965, 120.202518),
+								icon: '/images/pin.png'
+							});
+							var infowindow = new google.maps.InfoWindow({
+								content: res.description
+							});
+							marker.addListener('click', function() {
+								infowindow.open(map, marker);
+							});
+						} else {
+							console.log("地址轉換成經緯度: "+status);
+						}
+					});
+				},
+			dataType: "json"
+			});
+	}
+	//ajax send mark code end
 </script>
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&callback=initMap"></script>
 </body>
