@@ -9,8 +9,8 @@ var app = express();
 app.use('/public',express.static('public'));
 
 const s3 = new AWS.S3({
-    accessKeyId: "",
-    secretAccessKey: ""
+    accessKeyId: "AKIAI4YXVKNLMJDWWJTQ",
+    secretAccessKey: "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"
 });
 
 var upload = multer({

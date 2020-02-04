@@ -35,6 +35,8 @@
 		<div class="message">
 			<input id="content" type="text" placeholder="input the message" />
 			<button id="submit_message" type="button">送出</button>
+			<input type="file" id="socket_picture">
+			<button id="submit_picture" type="button">上傳</button>
 		</div>
 	</div>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js'></script>
@@ -68,7 +70,6 @@
 	document.getElementById("submit_message").addEventListener('click', function(){
 		Send();
 	});
-
 	function Send() {
 		let content = document.querySelector('#content').value;
 		if (!content && !name) {
@@ -84,7 +85,54 @@
 		socket.emit('message', data);
 		document.querySelector('#content').value = '';
 	}
-
+	//傳送圖片檔
+	document.getElementById("submit_picture").addEventListener('click', function(){
+		sendPicture();
+	});
+	
+	function sendPicture(){
+		let Imginput = document.getElementById('socket_picture');
+		let file = Imginput.files[0];
+		let reader = new FileReader();
+		reader.readAsDataURL(file);
+		reader.onload =function(){
+			let data = {
+				name: user_name,
+				img: {img: this.result}
+			};
+			//let data = {img: this.result};
+			socket.emit('sendImg', data);
+		}	
+	}
+	//收到後端傳來的圖片處理
+	socket.on('receiveImg', (obj) => {
+		console.log(obj);
+		appendImage(obj);
+	})
+	
+	function appendImage(obj){		
+		var chat = document.createElement("div");
+		chat.className = "chat";
+		var group = document.createElement("div");
+		group.className = "group";
+		var name = document.createElement("div");
+		name.className = "name";
+		var element_name = document.createTextNode(obj.name);
+		var chat_picture = document.createElement("img");
+		chat_picture.className = "chat_picture_file";
+		chat_picture.src = obj.img.img;
+		var time = document.createElement("div");
+		time.className = "time";
+		var element_time = document.createTextNode(moment(obj.time).fromNow());
+		time.appendChild(element_time);
+		name.appendChild(element_name);
+		group.appendChild(name);
+		group.appendChild(chat_picture);
+		chat.appendChild(group);
+		chat.appendChild(time);
+		document.getElementsByClassName("chats")[0].appendChild(chat);
+		scrollWindow();
+	}
 	//顯示歷史訊息
 	socket.on('history', function(obj){
 		console.log("收到後端歷史訊息");

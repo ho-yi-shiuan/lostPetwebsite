@@ -27,17 +27,17 @@ io.on('connection', async function(socket){
 	//拆解網址找出id
 	var url = socket.request.headers.referer;
 	var splited = url.split('=');
-	var socketid = splited[splited.length - 1];
+	var room_id = splited[splited.length - 1];
 	//加入房間
-	socket.join(socketid);
-	console.log('有人加入了room ' + socketid);
+	socket.join(room_id);
+	console.log('有人加入了room ' + room_id);
 	//歷史訊息
 	const messsage_promise = new Promise((resolve, reject) => {
-		con.query("SELECT name, content, time from socket"+socketid, function(err,res){
+		con.query("SELECT name, content, time from socket"+room_id, function(err,res){
 			if(err){
 				console.log(err);
 			}else{
-				console.log("select history message of room "+socketid+" successful!");
+				console.log("select history message of room "+room_id+" successful!");
 				console.log("history message: ");
 				console.log(res);
 				resolve(res);
@@ -45,6 +45,7 @@ io.on('connection', async function(socket){
 		})
 	})
 	const history = await messsage_promise;
+	const socketid = socket.id;
 	io.to(socketid).emit('history', history);
 	
 	//接收前端message事件
@@ -57,7 +58,7 @@ io.on('connection', async function(socket){
 			content:obj.content,
 			time:Date.now()
 		}
-		con.query("INSERT INTO socket" +socketid+ " set?", data, function(err,res){
+		con.query("INSERT INTO socket" +room_id+ " set?", data, function(err,res){
 			if(err){
 				console.log(err);
 			}else{
@@ -66,13 +67,22 @@ io.on('connection', async function(socket){
 		})
 		
 		//回傳給前端
-		io.to(socketid).emit("message", obj);
+		io.to(room_id).emit("message", obj);
 	});
-
+	//前端上傳圖片給後端
+	socket.on('sendImg', (obj) => {
+		console.log("socket收到前端圖片");
+		var data = {
+			name:obj.name,
+			img:obj.img,
+			time:Date.now()
+		}
+		io.to(room_id).emit('receiveImg', data);
+	});
 	// 當發生離線事件
 	socket.on("disconnect", function(){
-		console.log('有人離開了room ' + socketid);
-		socket.leave(socketid);
+		console.log('有人離開了room ' + room_id);
+		socket.leave(room_id);
 	});
 });
 
