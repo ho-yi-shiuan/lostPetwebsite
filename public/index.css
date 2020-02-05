@@ -65,9 +65,48 @@
 
 .container {
 	width: 20%;
-	margin: 0px 20px 0px 20px;
+	margin: 10px 20px 10px 20px;
 }
 
 .image {
 	width: 100%;
+}
+
+/*會員系統*/
+#submit{
+	width: 90px;
+	height: 30px;
+	margin-left: 50px;
+}
+
+#submitlogin{
+	height: 30px;
+}
+
+.insert{
+	margin-left: 40%;
+}
+
+.nameline, .emailline{
+	display: flex;
+	flex-direction: row;
+}
+
+#successname, #successemail{
+	margin-left: 35px;
+}
+
+.success{
+	margin-top: 20px;
+	margin-left: 40%;
+	display: none;
+}
+
+#fail{
+	margin-left: 40%;
+	margin-top: 20px;
+}
+
+.userprofile{
+	margin-left: 40%;
 }

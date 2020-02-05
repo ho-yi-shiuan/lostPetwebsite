@@ -1,6 +1,67 @@
+*{
+	margin-left:0px;
+	margin-right:0px;
+	margin-bottom: 0px;
+}
 
 a {
   color: #00B7FF;
+}
+
+/*頂端bar*/
+.mainheader{
+	display: flex;
+	width: 100%;
+	margin: 10px 0px 10px 0px;
+}
+
+.logo{
+	width: 50%;
+}
+
+#logo{
+	width: 200px;
+	margin-left: 20px;
+	z-index: 1;
+}
+
+.headlist{
+	display: flex;
+	flex-direction: row;
+	float: left;
+	list-style: none; 
+	margin: 5px;
+	padding: 0px;
+}
+
+.headlist li{
+	display: flex;
+	flex-direction: row;
+	float: left;
+	list-style: none; 
+	margin: 5px;
+}
+
+.sidelist {
+	display: flex;
+	flex-direction: row;
+	position: absolute;
+	right: 0px;
+	list-style: none; 
+	vertical-align: middle;
+	margin: 0px;
+	padding: 0px;
+}
+
+#black{
+	background: black;
+	height: 20px;
+	width: 100%;
+}
+
+/* body part */
+body {
+	/*background: #FEFDF0;*/
 }
 
 .body {
@@ -15,31 +76,58 @@ a {
 	border-color:#6C6024;
 	border-width:3px;
 	border-style:solid;
-	margin-right: 20px;
+	margin-right: 10px;
+	margin-left: 10px;
 }
 
 .profile {
 	height:40%;
 	border-color:#ADA142;
 	border-width:3px;
-	border-style:solid;	
+	border-style:solid;
+	margin: 5px 5px 10px 5px;
+	display: flex;
+}
+
+.picture, .information {
+	width: 50%;
+	border-color:#ADA142;
+	border-width:3px;
+	border-style:solid;
+	margin: 5px 5px 5px 5px;
+}
+
+.picture_file {
+	height:100%;
+}
+
+.map_mark {
+	height:55%;
+	border-color:#ADA142;
+	border-width:3px;
+	border-style:solid;
+	margin: 0px 5px 20px 5px;
+	display: flex;	
+}
+
+#map, .mark{
+	width: 50%;
+	border-color:#ADA142;
+	border-width:3px;
+	border-style:solid;
 	margin: 5px 5px 20px 5px;
 }
 
-#map {
+.chatroom {
 	width: 50%;
-	height:50%;
-	border-color:#ADA142;
-	border-width:3px;
-	border-style:solid;	
-	margin: 5px 5px 20px 5px;
+	margin-top: 5px;
+	margin-right: 10px;
 }
 
 .chats {
-  padding: 10px 5px;
   height: 80%;
-  width: 500px;
-  background: #eee;
+  width: 100%;
+  background-image:url('images/socket.png');
   overflow-y: scroll;
 }
 
@@ -51,11 +139,20 @@ a {
 .chats .chat .group {
   display: inherit;
   word-wrap: normal;
+  max-width: 80%;
 }
 
 .chats .chat .group .name {
   padding: 0 10px;
   font-weight: bold;
+}
+
+.chats .chat .group .content{
+	max-width: 100%;
+}
+
+.chat_picture_file {
+	width: 75%;
 }
 
 .chats .chat .time {
@@ -69,17 +166,13 @@ a {
   margin-top: 10px;
 }
 
-.message input {
+#content {
   padding: 0 5px;
   height: 25px;
   width: 300px;
 }
 
-.message input:first-child {
-  width: 80px;
-}
-
 .message button {
   height: 32px;
-  width: 80px;
+  width: 50px;
 }
