@@ -5,7 +5,7 @@ const io = require('socket.io')(server);
 const AWS = require('aws-sdk');
 var mysql = require("./mysqlcon.js");
 var bodyParser = require('body-parser');
-var mysql = require("mysql");
+var mysql = require("./mysqlcon.js");
 
 AWS.config.loadFromPath('./s3_config.json');
 var s3Bucket = new AWS.S3( { params: {Bucket: 'yssites.com/person_project/socket'} } );
@@ -18,6 +18,7 @@ app.use('/lost_detail', require('./routes/lost_detail'));
 app.use('/lost_mark', require('./routes/lost_mark'));
 //會員系統api
 app.use('/signup', require('./routes/signup'));
+app.use('/signin', require('./routes/signin'));
 
 //各房間的user list
 var roomInfo = {};
@@ -32,8 +33,9 @@ io.on('connection', async function(socket){
 	socket.join(room_id);
 	console.log('有人加入了room ' + room_id);
 	//歷史訊息
+	//console.log("SELECT name, content, content_type, time from socket"+room_id);
 	const messsage_promise = new Promise((resolve, reject) => {
-		con.query("SELECT name, content, content_type, time from socket"+room_id, function(err,res){
+		mysql.con.query("SELECT name, content, content_type, time from socket"+room_id, function(err,res){
 			if(err){
 				console.log(err);
 			}else{
@@ -59,7 +61,7 @@ io.on('connection', async function(socket){
 			content_type: "text",
 			time:Date.now()
 		}
-		con.query("INSERT INTO socket" +room_id+ " set?", data_text, function(err,res){
+		mysql.con.query("INSERT INTO socket" +room_id+ " set?", data_text, function(err,res){
 			if(err){
 				console.log(err);
 			}else{
@@ -76,7 +78,7 @@ io.on('connection', async function(socket){
 		var data = {
 			name:obj.name,
 			content:"",
-			type_of_content: "image",
+			content_type: "image",
 			time:Date.now()
 		}
 		//s3 code start
@@ -102,7 +104,7 @@ io.on('connection', async function(socket){
 		});
 		promise1.then(function(key) {
 			data.content = key;
-			con.query("INSERT INTO socket" +room_id+ " set?", data, function(err,res){
+			mysql.con.query("INSERT INTO socket" +room_id+ " set?", data, function(err,res){
 				if(err){
 					console.log(err);
 				}else{

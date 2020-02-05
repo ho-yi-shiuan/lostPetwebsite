@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel=stylesheet type="text/css" href="./index.css">
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+</head>
+<body>
+<span style="font-family:Microsoft JhengHei;">
+	<header>
+	<div class = "mainheader">
+		<a href="/index.html"><!--<div id = "logo"><img src="/images/logo.png" width=100%></div>--></a>
+			<ul class="headlist">
+				<li>介面1</li>
+				<li>｜</li>
+				<li>介面2</li>
+				<li>｜</li>
+				<li>介面3</li>
+			</ul>
+			<ul class="sidelist">
+				<li><a href="/profile.html"><img src="/images/member.png"></a></li>
+				<li><img src="/images/bell.png"></li>
+			</ul>
+	</div>
+	<div id = "black"></div>
+	</header>
+	<div class="insert">
+		登入帳戶<a href="signup.html">（註冊）</a></br>
+		信箱:</br><input type="text" id="email" value = "test@test.com" style="font-size:15px"></input></br>
+		密碼:</br><input type="text" id="password" value = "testpassword" style="font-size:15px"></input></br>
+		<button id="submitlogin" onclick="signin();">登入</button>
+		<button id="submitlogin" onclick="fblogin();">以Facebook登入</button>
+	</div>
+	<div class="success">
+		<div>登入成功, 資料如以下:</div></br>
+		<div class="nameline">姓名:<div id="successname"></div></div></br>
+		<div class="emailline">信箱:<div id="successemail"></div></div>
+	</div>
+	<div id="fail"></div>
+</span>	
+<script>
+	function signin(){
+		var signup_data = {
+			provider:"native",
+			email: document.getElementById("email").value,
+			password: document.getElementById("password").value
+		}
+		console.log(signup_data);
+		$.ajax({
+			contentType :"application/json",
+			type: "POST",
+			url: "/signin",
+			data: JSON.stringify(signup_data),
+			success: function(res)
+			{
+				if(res == 2)
+				{
+					console.log("wrong email or password")
+					document.getElementById("fail").innerHTML = "帳號或密碼錯誤, 請重新輸入";
+					document.getElementsByClassName("success")[0].style.display = "none";
+					document.getElementById("fail").style.display = "block";
+				}
+				else
+				{
+					console.log(res);
+					console.log("success");
+					document.getElementById("successname").innerHTML = res.data.user.name;
+					document.getElementById("successemail").innerHTML = res.data.user.email;
+					document.getElementsByClassName("success")[0].style.display = "block";
+					document.getElementById("fail").style.display = "none";
+				}
+			},
+			error: function(err)
+			{
+				console.log(err);
+			},
+			dataType: "json"
+			});	
+	}
+	var person = {name: "",picture: "",email: "",provider: "facebook"};
+	function fblogin(){
+		FB.login(function(response){
+			if(response.status == "connected"){
+				person.accesstoken = response.authResponse.accessToken;
+				
+				FB.api("/me?fields=name,email,picture.type(large)",function(userData){
+					person.name = userData.name;
+					person.email = userData.email;
+					person.picture = userData.picture.data.url;
+				});
+				
+				$.ajax({
+					type: "POST",
+					url: "/fblogin",
+					data: person,
+					success: function(){alert("login success!");},
+					dataType: "json"
+				});
+			}
+		}, {scope: "public_profile, email"})
+	}
+
+	window.fbAsyncInit = function() {
+		FB.init({
+			appId            : '2897888950235941',
+			autoLogAppEvents : true,
+			xfbml            : true,
+			version          : 'v5.0'
+		});
+	};
+
+	// 載入 FB SDK
+	(function(d, s, id) {
+		var js, fjs = d.getElementsByTagName(s)[0];
+		if (d.getElementById(id)) return;
+		js = d.createElement(s);
+		js.id = id;
+		js.src = "https://connect.facebook.net/zh_TW/sdk.js";
+		fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+</script>
+</body>
+</html>
