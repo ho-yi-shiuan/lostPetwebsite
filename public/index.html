@@ -9,28 +9,28 @@
 <body>
 <span style="font-family:Microsoft JhengHei;">
 	<header>
-	<div class = "mainheader">
-		<a href="/index.html"><!--<div id = "logo"><img src="/images/logo.png" width=100%></div>--></a>
-
-			<ul class="headlist">
-				<li>介面1</li>
-				<li>｜</li>
-				<li>介面2</li>
-				<li>｜</li>
-				<li>介面3</li>
-			</ul>
-
-
+	<div class = "mainheader_index">
+		<a href="/index.html"><div id = "logo"><img src="/images/pet_logo.png" height=100%></div></a>
+		<div id="sidelist_container">
 			<ul class="sidelist">
-				<li><a href="/profile.html"><img src="/images/member.png"></a></li>
-				<li><img src="/images/bell.png"></li>
+				<li><a href="/index.html" style="text-decoration: none; color: black;">走失總覽</a></li>
+				<li>｜</li>
+				<li><a href="/index.html" style="text-decoration: none; color: black;">拾獲總覽</a></li>
+				<li>｜</li>
+				<li><a href="/new_lost.html" style="text-decoration: none; color: black;">我要刊登</a></li>
+				<li>｜</li>
+				<li><a href="/profile.html" style="text-decoration: none; color: black;">會員頁面</a></li>
 			</ul>
-
+		</div>
 	</div>
-	<div id = "black"></div>
 	</header>
 	<div class="body">
-		<div class="lost_pets"></div>
+		<div class="lost_pets">
+			<div class="container">
+				<a href="/new_lost.html"><img class="image" src="/images/add.png"></a>
+				<div class="name">點此新增</div>
+			</div>
+		</div>
 	</div>
 	
 <script>
@@ -46,7 +46,7 @@
 				var container = document.createElement("div");
 				container.className = "container";
 				var image_container = document.createElement("a");
-				//image_container.href = 
+				image_container.href = "/room?id="+pets.data[i].id;
 				var image = document.createElement("img");
 				image.className = "image";
 				image.src = pets.data[i].picture;
@@ -68,7 +68,8 @@
 				container.appendChild(name);
 				container.appendChild(location);
 				container.appendChild(time);
-				document.getElementsByClassName("lost_pets")[0].appendChild(container);				
+				var exist_container = document.getElementsByClassName("container")[0];
+				document.getElementsByClassName("lost_pets")[0].insertBefore(container, exist_container);				
 			}
 		}
 	}

@@ -1,23 +1,45 @@
 *{
-	margin-left:0px;
-	margin-right:0px;
-	margin-bottom: 0px;
+	margin: 0px;
 }
+
+#signup_page {
+	background-image: url('https://d2h10qrqll8k7g.cloudfront.net/person_project/image/background(cat).jpg');
+	height: 100vh;
+    background-repeat:no-repeat;
+    background-size:cover;
+}
+
+#signin_page {
+	background-image: url('https://d2h10qrqll8k7g.cloudfront.net/person_project/image/background(dog).jpg');
+	height: 100vh;
+    background-repeat:no-repeat;
+    background-size:cover;	
+}
+
+
 /*頂端bar*/
+
+.mainheader_index {
+	display: flex;
+	width: 100%;
+	margin: 0px 0px 10px 0px;
+	height: 30px;
+	padding-top: 10px;	
+}
+
 .mainheader{
 	display: flex;
 	width: 100%;
-	margin: 10px 0px 10px 0px;
-}
-
-.logo{
-	width: 50%;
+	margin: 0px 0px 50px 0px;
+	height: 30px;
+	padding-top: 10px;
 }
 
 #logo{
 	width: 200px;
-	margin-left: 20px;
+	margin-left: 40px;
 	z-index: 1;
+	height: 100%;
 }
 
 .headlist{
@@ -45,13 +67,15 @@
 	list-style: none; 
 	vertical-align: middle;
 	margin: 0px;
-	padding: 0px;
+	padding: 0px 40px 0px 0px;
 }
 
-#black{
-	background: black;
-	height: 20px;
-	width: 100%;
+.sidelist li {
+	margin-left: 10px;
+}
+
+#sidelist_container {
+	padding-top: 5px;
 }
 
 /* 內容圖片 */
@@ -65,9 +89,89 @@
 
 .container {
 	width: 20%;
-	margin: 0px 20px 0px 20px;
+	margin: 10px 20px 10px 20px;
 }
 
 .image {
 	width: 100%;
+}
+
+/*會員系統*/
+
+#logo_member {
+	width: 100%;
+}
+
+#form_logo {
+	width: 20%;
+	margin-left: 40%;
+	margin-top: 20px;
+}
+
+#divider {
+	width: 80%;
+	margin-bottom: 20px;
+	margin-top: 20px;
+	margin-left: 10%;
+}
+
+#name, #email, #password {
+	border-radius:4px;
+	border:1px solid #787878;
+	height: 40px;
+	width: 60%;
+	margin-bottom: 20px;
+}
+
+#submit{
+	width: 90px;
+	height: 40px;
+	border-radius:4px;
+	border:0px;
+}
+
+#submitlogin{
+	height: 30px;
+}
+
+.insert{
+	color: white;
+	margin: 0 auto;
+	height: 480px;
+	width: 400px;
+	position: relative;
+	align-self: center;
+	background-color: rgba(0,0,0,.5);
+	border: 1px solid rgba(0,0,0,.125);
+}
+
+#insert_content {
+	text-align: center;
+}
+
+.nameline, .emailline{
+	display: flex;
+	flex-direction: row;
+}
+
+#successname, #successemail{
+	margin-left: 35px;
+}
+
+.success{
+	margin-top: 20px;
+	margin-left: 40%;
+	display: none;
+}
+
+#fail{
+	margin-top: 20px;
+}
+
+#signin {
+	margin-top: 60px;
+}
+
+.userprofile{
+	margin-left: 40%;
 }
