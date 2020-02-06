@@ -142,11 +142,9 @@
 		var name = document.createElement("div");
 		name.className = "name";
 		var element_name = document.createTextNode(obj.name);
-
 		var content = document.createElement("img");
 		content.className = "chat_picture_file";
 		content.src = picture_s3_url+obj.content;
-		
 		var time = document.createElement("div");
 		time.className = "time";
 		var element_time = document.createTextNode(moment(obj.time).fromNow());
@@ -162,7 +160,6 @@
 	//顯示歷史訊息
 	socket.on('history', function(history_obj){
 		console.log("前端收到歷史訊息");
-		console.log(history_obj[1].content_type);
 		console.log(history_obj);
 		if (history_obj.length > 0) {
 			appendData(history_obj);

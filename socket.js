@@ -19,6 +19,7 @@ app.use('/lost_mark', require('./routes/lost_mark'));
 //會員系統api
 app.use('/signup', require('./routes/signup'));
 app.use('/signin', require('./routes/signin'));
+app.use('/profile', require('./routes/profile'));
 
 //各房間的user list
 var roomInfo = {};
