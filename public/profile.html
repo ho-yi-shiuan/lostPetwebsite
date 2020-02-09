@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel=stylesheet type="text/css" href="./index.css">
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+</head>
+<body>
+<span style="font-family:Microsoft JhengHei;">
+	<header>
+	<div class = "mainheader">
+		<a href="/index.html"><div id = "logo"><img src="/images/pet_logo.png" height=100%></div></a>
+		<div id="sidelist_container">
+			<ul class="sidelist">
+				<li><a href="/index.html" style="text-decoration: none; color: black;">走失總覽</a></li>
+				<li>｜</li>
+				<li><a href="/index.html" style="text-decoration: none; color: black;">拾獲總覽</a></li>
+				<li>｜</li>
+				<li><a href="/new_lost.html" style="text-decoration: none; color: black;">我要刊登</a></li>
+				<li>｜</li>
+				<li><a href="/profile.html" style="text-decoration: none; color: black;">會員頁面</a></li>
+			</ul>
+		</div>
+	</div>
+	</header>
+	<div class="userprofile">
+		<div class="head">會員資料</div>
+		<hr id="divider">
+		<div class="nameline">姓名: <div id="successname"></div></div></br>
+		<div class="emailline">信箱: <div id="successemail"></div></div></br>
+		<div id="signout" onclick="signout()"><a href="signin.html" style="text-decoration: none; color: white;">登出</a></div>
+	</div>
+	<div class="message">
+		<div class="head">訊息</div>
+		<hr id="divider">
+		<div class="message_container">
+			<div class="message_time"><div class="message_time_title">時間: </div><div id="send_time">2020-01-31T11:50</div></div>
+			<div class="message_content"><div class="message_content_title">訊息內容: </div><div id="">訊息內容訊息內容訊息內容訊息內容訊息內容訊息內容訊息內容訊息內容訊息內容</div></div>
+		</div>
+	</div>
+	<div class="user_lost_data">
+		<div class="head">協尋中寵物</div>
+	</div>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/locale/zh-tw.js'></script>
+<script>
+	function getCookie(name)
+	{
+		var arr = document.cookie.match(new RegExp("(^| )"+name+"=([^;]*)(;|$)"));
+		if(arr != null){
+			return unescape(arr[2]);
+			
+		}return null;
+	}
+	function signout(){
+		var exp = new Date();
+		exp.setTime(exp.getTime() - 1);
+		var user_cookie = getCookie("user");
+		if(user_cookie!=null){
+			document.cookie = "user="+user_cookie+";expires="+exp.toGMTString();
+		}
+	}
+	var cookiesend = {};
+	function getcookie()
+	{
+		var cookies = document.cookie.split(";");
+		console.log(cookies);
+		for(i=0;i<cookies.length;i++)
+		{
+			var c = cookies[i].trim();//去空白
+			if(c.indexOf("user=") >= 0)//回傳找到的第一個
+			{
+				//找到user cookie, 直接拿token去登入, 回傳會員資料
+				cookiesend.cookie = c.substring(5,c.length);
+				return("2");
+			}
+		}
+	}
+
+	var cookieresult = getcookie();
+	if(cookieresult == "2")
+	{
+		$.ajax({
+			contentType :"application/json",
+			type: "POST",
+			url: "/profile",
+			data: JSON.stringify(cookiesend),
+			success: function(res)
+			{
+				if(res.status == "expired"){
+					document.location.href = "/signin.html";
+				}else if(res.status == "wrong"){
+					document.location.href = "/signin.html";
+				}else{
+					document.getElementById("successname").innerHTML = res.data.name;
+					document.getElementById("successemail").innerHTML = res.data.email;
+					console.log(res);
+					append_lost(res.data.lost_pet);
+					append_message(res.data.message);
+				}
+			},
+			error: function(err)
+			{
+				console.log(err);
+			},
+			dataType: "json"
+			});
+	}
+	else{
+		document.location.href="/signin.html";
+	}
+	function append_lost(res){
+		for(i=0; i<res.length; i++){
+			var divider = document.createElement("hr");
+			divider.id = "divider";
+			document.getElementsByClassName("user_lost_data")[0].appendChild(divider);
+			var profile_pet = document.createElement("div");
+			profile_pet.className = "profile_pet";
+			var profile_pet_picture = document.createElement("div");
+			profile_pet_picture.id = "profile_pet_picture";
+			var profile_pet_picture_file = document.createElement("img");
+			profile_pet_picture_file.id = "profile_pet_picture_file";
+			profile_pet_picture_file.src=res[i].picture;
+			var profile_pet_picture_link = document.createElement("a");
+			profile_pet_picture_link.href = "/room?id="+res[i].id;
+			profile_pet_picture_link.appendChild(profile_pet_picture_file);
+			profile_pet_picture.appendChild(profile_pet_picture_link);
+			profile_pet.appendChild(profile_pet_picture);
+			var profile_pet_data = document.createElement("div");
+			profile_pet_data.className = "profile_pet_data";
+			
+			var profile_pet_name = document.createElement("div");
+			profile_pet_name.className = "profile_pet_name";
+			var element_name = document.createTextNode("姓名: "+res[i].name);
+			profile_pet_name.appendChild(element_name);
+			profile_pet_data.appendChild(profile_pet_name);
+			
+			var profile_pet_gender = document.createElement("div");
+			profile_pet_gender.className = "profile_pet_gender";
+			var element_gender = document.createTextNode("性別: "+res[i].gender);
+			profile_pet_gender.appendChild(element_gender);
+			profile_pet_data.appendChild(profile_pet_gender);
+			
+			var profile_pet_age = document.createElement("div");
+			profile_pet_age.className = "profile_pet_age";
+			var element_age = document.createTextNode("年齡: "+res[i].age);
+			profile_pet_age.appendChild(element_age);
+			profile_pet_data.appendChild(profile_pet_age);
+
+			var profile_pet_breed = document.createElement("div");
+			profile_pet_breed.className = "profile_pet_breed";
+			var element_breed = document.createTextNode("品種: "+res[i].breed);
+			profile_pet_breed.appendChild(element_breed);
+			profile_pet_data.appendChild(profile_pet_breed);
+			
+			var profile_pet_color = document.createElement("div");
+			profile_pet_color.className = "profile_pet_color";
+			var element_color = document.createTextNode("顏色: "+res[i].color);
+			profile_pet_color.appendChild(element_color);
+			profile_pet_data.appendChild(profile_pet_color);
+			
+			var profile_pet_location = document.createElement("div");
+			profile_pet_location.className = "profile_pet_location";
+			var element_location = document.createTextNode("走失地點: "+res[i].lost_location);
+			profile_pet_location.appendChild(element_location);
+			profile_pet_data.appendChild(profile_pet_location);
+			
+			var profile_pet_time = document.createElement("div");
+			profile_pet_time.className = "profile_pet_time";
+			var element_time = document.createTextNode("走失時間: "+res[i].lost_time);
+			profile_pet_time.appendChild(element_time);
+			profile_pet_data.appendChild(profile_pet_time);
+			
+			var profile_pet_other = document.createElement("div");
+			profile_pet_other.className = "profile_pet_other";
+			var element_other = document.createTextNode("其他資訊: "+res[i].other);
+			profile_pet_other.appendChild(element_other);
+			profile_pet_data.appendChild(profile_pet_other);
+			
+			var close_case = document.createElement("div");
+			close_case.className = "close_case";
+			var delete_div = document.createElement("div");
+			delete_div.id = "delete";
+			var delete_image = document.createElement("img");
+			delete_image.style = "height: 100%";
+			delete_image.src = "/images/delete.png";
+			delete_div.appendChild(delete_image);
+			var delete_message = document.createElement("div");
+			var message_content_start = document.createTextNode("寵物已經回家, ");
+			delete_message.appendChild(message_content_start);
+			delete_message.appendChild(document.createElement("br"));
+			var message_content_end = document.createTextNode("關閉協尋頁面");
+			delete_message.appendChild(message_content_end);
+			
+			close_case.appendChild(delete_div);
+			close_case.appendChild(delete_message);
+			
+			profile_pet.appendChild(profile_pet_data);
+			profile_pet.appendChild(close_case);
+			document.getElementsByClassName("user_lost_data")[0].appendChild(profile_pet);
+		}
+	}
+	function append_message(message){
+		for(j=0; j<message.length; j++){
+			var send_time = document.createElement("div");
+			send_time.id = "send_time";
+			var message_time = document.createTextNode(moment(message[j].send_time).format('YYYY-MM-DD'));
+			send_time.appendChild(message_time);
+			document.getElementsByClassName("message_time")[0].appendChild(send_time);
+			var content = document.createElement("div");
+			content.id = "send_content";
+			var message_content = document.createTextNode(message[j].content);
+			content.appendChild(message_content);
+			document.getElementsByClassName("message_content")[0].appendChild(content);
+		}
+	}
+</script>
+</span>
+</body>
+</html>
