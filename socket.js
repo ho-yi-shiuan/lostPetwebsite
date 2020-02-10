@@ -21,6 +21,7 @@ app.use('/signup', require('./routes/signup'));
 app.use('/signin', require('./routes/signin'));
 app.use('/profile', require('./routes/profile'));
 app.use('/user_mark', require('./routes/user_mark'));
+app.use('/close_case', require('./routes/close_case'));
 //message api
 app.use('/message', require('./routes/message'));
 

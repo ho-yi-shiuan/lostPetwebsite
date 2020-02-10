@@ -7,9 +7,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.post("/", async function(req, res){
+	//改成先拿user 資料, 再拿lost_pet資料, 不要一起拿
+	console.log("後端收到的token為: "+req.body.cookie);
 	var token = req.body.cookie;
 	var now = Date.now();
-	var search_token = "select a.*, b.* FROM user as a, lost_pet as b where a.id = b.user_id and access_token = \""+token+"\";";
+	var search_token = "select * FROM user where access_token = \""+token+"\";";
+	console.log(search_token);
 	const token_promise = new Promise((resolve, reject) => {
 		mysql.con.query(search_token,function(err, result){
 			if(err){
@@ -36,6 +39,18 @@ app.post("/", async function(req, res){
 		});
 	})
 	let info = await token_promise;
+	var search_lost_record = "SELECT * from lost_pet where user_id = "+info[0].id+";";
+	const search_lost_record_promise = new Promise((resolve, reject) => {
+		mysql.con.query(search_lost_record, function(err, result){
+			if(err){
+				console.log(err);
+			}else{
+				console.log("select user's lost pet data successfully");
+				resolve(result);
+			}
+		});
+	})
+	let lost_record = await search_lost_record_promise;
 	var search_message = "SELECT * from message where receive_id = "+info[0].id+";";
 	const message_promise = new Promise((resolve, reject) => {
 		mysql.con.query(search_message, function(err, result){
@@ -68,18 +83,18 @@ app.post("/", async function(req, res){
 	}
 	var picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/";
 	var lost_array = [];
-	for(i=0; i<info.length; i++){
+	for(i=0; i<lost_record.length; i++){
 		lost_array.push({
-			id: info[i].pet_id,
-			name: info[i].pet_name,
-			picture: picture_s3_url+info[i].pet_picture,
-			gender: info[i].gender,
-			age: info[i].age,
-			breed: info[i].breed,
-			color: info[i].color,
-			lost_location: info[i].lost_location,
-			lost_time: info[i].lost_time,
-			other: info[i].other
+			id: lost_record[i].pet_id,
+			name: lost_record[i].pet_name,
+			picture: picture_s3_url+lost_record[i].pet_picture,
+			gender: lost_record[i].gender,
+			age: lost_record[i].age,
+			breed: lost_record[i].breed,
+			color: lost_record[i].color,
+			lost_location: lost_record[i].lost_location,
+			lost_time: lost_record[i].lost_time,
+			other: lost_record[i].other
 		})
 	}
 	var message_array = [];
@@ -88,7 +103,8 @@ app.post("/", async function(req, res){
 			send_id: message[j].send_id,
 			send_time: message[j].send_time,
 			receive_id: message[j].receive_id,
-			content: message[j].content
+			content: message[j].content,
+			link_id: message[j].link_id
 		})
 	}
 	var data = {
@@ -105,7 +121,9 @@ app.post("/", async function(req, res){
 		status: "success",
 		data: data
 	};
+	res.cookie("user",token);
 	console.log(list);
+	console.log("後端在profile page更新token為"+token);
 	res.send(list);
 })
 

@@ -66,6 +66,7 @@ app.post('/', upload.single('image'), async function(req, res){
 		else
 		{
 			console.log("lost_record api: db新增聊天室table成功");
+			res.redirect("/");
 		}
 	});	
 	//1. 篩出db裡會員經緯度在一定範圍內的
@@ -86,10 +87,35 @@ app.post('/', upload.single('image'), async function(req, res){
 		});
 	})	
 	let near_user = await mark_promise;	
+	let near_user_array = [];
 	for(j=0; j<near_user.length; j++){
 		//篩掉重複的user_id
 		//insert message
-		
+		near_user_array.push(near_user[j].user_id);
+	}
+	console.log("array: "+near_user_array);
+	var result = near_user_array.filter(function(element, index, arr){
+		return arr.indexOf(element)=== index;
+	});
+	console.log(result);
+	for(k=0; k<result.length; k++){
+		if(result[k] != req.body.user_id){
+			var insert_message = {
+				send_id: 0,
+				send_time: Date.now(),
+				receive_id: result[k],
+				content: "有寵物在您附近走失, 請點訊息前往",
+				link_id: insert_lost_pet.insertId
+			}
+			mysql.con.query("INSERT INTO message set?", insert_message, function(err, result){
+				if(err){
+					console.log("lost_record api(mark): \n");
+					console.log(err);
+				}else{
+					console.log("找出經緯度±0.1的會員成功");
+				}
+			});					
+		}
 	}
 });
 

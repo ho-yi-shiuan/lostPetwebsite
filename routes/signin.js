@@ -66,7 +66,7 @@ app.post('/', async function(req, result){
 					data: data
 				};
 				result.cookie("user",token);
-				result.cookie("user_id",user_data[0].id);
+				console.log("登入後新token為 "+token);
 				result.send(list);
 			}else{
 				console.log("帳密不符合");
@@ -145,7 +145,6 @@ app.post('/', async function(req, result){
 				};
 				console.log(list);
 				result.cookie("user",token);
-				result.cookie("user_id",facebook_signup.insertId);
 				result.send(list);
 		}
 		else if(user_data.length > 0){//已註冊, 找出其他資訊
@@ -196,7 +195,6 @@ app.post('/', async function(req, result){
 				data: data
 			};
 			result.cookie("user",token);
-			result.cookie("user_id",user_data[0].id);
 			result.send(list);		
 			console.log(list);			
 		}		

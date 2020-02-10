@@ -42,8 +42,8 @@
 		<div class="head">訊息</div>
 		<hr id="divider">
 		<div class="message_container">
-			<div class="message_time"><div class="message_time_title">時間: </div><div id="send_time">2020-01-31T11:50</div></div>
-			<div class="message_content"><div class="message_content_title">訊息內容: </div><div id="">訊息內容訊息內容訊息內容訊息內容訊息內容訊息內容訊息內容訊息內容訊息內容</div></div>
+			<div class="message_time"><div class="message_time_title">時間: </div></div>
+			<div class="message_content"><div class="message_content_title">訊息內容: </div></div>
 		</div>
 	</div>
 	<div class="user_lost_data">
@@ -82,6 +82,7 @@ var user_id;
 			{
 				//找到user cookie, 直接拿token去登入, 回傳會員資料
 				cookiesend.cookie = c.substring(5,c.length);
+				console.log("前端cookie找到的token為: "+cookiesend.cookie);
 				return("2");
 			}
 		}
@@ -227,6 +228,7 @@ var user_id;
 	//googlt map code end	
 
 	function append_lost(res){
+		console.log(res);
 		for(i=0; i<res.length; i++){
 			var divider = document.createElement("hr");
 			divider.id = "divider";
@@ -296,6 +298,7 @@ var user_id;
 			
 			var close_case = document.createElement("div");
 			close_case.className = "close_case";
+			close_case.onclick = function(){close(res[i].id);};
 			var delete_div = document.createElement("div");
 			delete_div.id = "delete";
 			var delete_image = document.createElement("img");
@@ -326,10 +329,38 @@ var user_id;
 			document.getElementsByClassName("message_time")[0].appendChild(send_time);
 			var content = document.createElement("div");
 			content.id = "send_content";
+			content.style = "text-align: center";
 			var message_content = document.createTextNode(message[j].content);
 			content.appendChild(message_content);
-			document.getElementsByClassName("message_content")[0].appendChild(content);
+			if(message[j].link_id){
+				var content_link = document.createElement("a");
+				content_link.href = "/room?id="+message[j].link_id;
+				content_link.style = "text-decoration: none; color: white; text-align: center";
+				content_link.appendChild(content);
+				document.getElementsByClassName("message_content")[0].appendChild(content_link);			
+			}else{
+				document.getElementsByClassName("message_content")[0].appendChild(content);
+			}
 		}
+	}
+	function close(id){
+		console.log("執行刪除");
+		var delete_id = {
+			delete_id: id
+		}
+		$.ajax({
+			contentType :"application/json",
+			type: "POST",
+			url: "/close_case",
+			data: JSON.stringify(delete_id),
+			success: function(res)
+				{
+					if(res.delete_result == "success"){
+						document.location.href = "/profile.html";
+					}
+				},
+			dataType: "json"
+		});		
 	}
 </script>
 </span>

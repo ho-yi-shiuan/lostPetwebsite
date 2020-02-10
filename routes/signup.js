@@ -85,10 +85,8 @@ app.post('/', async function(req, res){
 			data: data
 		};
 		console.log(list);
+		console.log("後端signup 時的token為"+token);
 		res.cookie("user",token);
-		res.cookie("name",signup_data.name);
-		res.cookie("user_id",insert_signup_result.insertId);
-		res.cookie("picture",signup_data.picture);
 		res.send(list);
 	}
 	});
