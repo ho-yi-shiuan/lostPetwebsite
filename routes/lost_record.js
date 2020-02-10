@@ -35,7 +35,9 @@ app.post('/', upload.single('image'), async function(req, res){
 		age: req.body.pet_age,
 		breed: req.body.pet_breed,
 		color: req.body.pet_color,
-		lost_location: req.body.lost_address,
+		lost_location: req.body.input_address,
+		lost_location_lng: req.body.lost_address_lng,
+		lost_location_lat: req.body.lost_address_lat,
 		lost_time: req.body.lost_time,
 		other: req.body.other,
 		user_id: req.body.user_id
@@ -66,7 +68,29 @@ app.post('/', upload.single('image'), async function(req, res){
 			console.log("lost_record api: db新增聊天室table成功");
 		}
 	});	
-	
+	//1. 篩出db裡會員經緯度在一定範圍內的
+	//2. 幫他們insert message
+	//lost_location_lng: req.body.lost_address_lng,
+	//lost_location_lat: req.body.lost_address_lat,	
+	//一度經緯度距離約為111 km, 撈經度± 0.1,緯度± 0.1
+	var select_mark = "SELECT user_id from user_mark WHERE location_lng BETWEEN "+req.body.lost_address_lng+"-0.1 AND "+req.body.lost_address_lng+"+0.1 AND location_lat BETWEEN "+req.body.lost_address_lat+"-0.1 AND "+req.body.lost_address_lat+"+0.1;";
+	const mark_promise = new Promise((resolve, reject) => {
+		mysql.con.query(select_mark, function(err, result){
+			if(err){
+				console.log("lost_record api(mark): \n");
+				console.log(err);
+			}else{
+				console.log("找出經緯度±0.1的會員成功");
+				resolve(result);
+			}
+		});
+	})	
+	let near_user = await mark_promise;	
+	for(j=0; j<near_user.length; j++){
+		//篩掉重複的user_id
+		//insert message
+		
+	}
 });
 
 app.get('/', async function(req, res){

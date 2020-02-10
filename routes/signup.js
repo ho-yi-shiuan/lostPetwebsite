@@ -36,7 +36,7 @@ app.post('/', async function(req, res){
 			return token;
 		}
 		token = createtoken(req.body.email+date);
-		var time = 360000;
+		var time = 3600000;
 		var expire = parseInt(date+time);
 		//加密password
 		const saltRounds = 10;

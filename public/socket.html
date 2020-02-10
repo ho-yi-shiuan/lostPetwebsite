@@ -24,40 +24,45 @@
 		</div>
 	</div>
 	</header>
-<div class = "body">
-	<div class = "profile_map">
-			<div class = "picture"></div>
-			<table width=100% border="1"  class = "information"></table>
-			<div id="map"></div>
-			<div class = "mark">
-				<b style="font-size:20px">←最近出沒地點</b></br>
-				<img src="/images/placeholder.png"> : 走失地點</br>
-				<img src="/images/pin.png"> : 回報出現地點(點擊標記可觀看回報相關資訊)</br></br>
-				<b style="font-size:16px">若發現該寵物出現, 請在以下回報地點</b></br>
-				請輸入地址: </br><input type="text" id="insert_mark" placeholder = "ex: 臺北市信義區信義路五段7號"></input>
-				<button id="select_current_spot">存取目前位置</button></br>
-				請輸入發現時間等其他資訊: </br><textarea id="insert_info" type = "textarea" placeholder = "ex: 1/10上午10點發現, 與其他流浪犬集體出現" style="width:250px;height:50px;"></textarea></br>			
-				<button id="submit_mark">送出</button>
-				</form>
+	<div class="body">
+	<div class = "profile_body">
+		<div class = "profile_map">
+				<div class = "picture"></div>
+				<table width=100% class = "information"></table>
+		</div>
+		<div class = "chatroom" onkeydown="keyLogin();">
+			<div class="chats">
 			</div>
+			<div class="message_container">
+			<div class="message">
+				<input id="content" type="text" placeholder="input the message" />
+				<img id="submit_message" src="/images/send.png" style="margin-right: 5px; Opacity: 0.7;">
+				<label class="upload_cover">
+					<input type="file" id="socket_picture" onchange="sendPicture()">
+					<span id="upload_cover_image" style="Opacity: 0.7;"><img src="/images/photo.png"></span>
+				</label>
+			</div>
+			</div>
+		</div>
 	</div>
-	<div class = "chatroom" onkeydown="keyLogin();">
-		<div class="chats">
-		</div>
-		<div class="message">
-			<input id="content" type="text" placeholder="input the message" />
-			<img id="submit_message" src="/images/send.png" style="margin-right: 5px; Opacity: 0.7;">
-			<label class="upload_cover" style="margin-right: 5px;">
-				<input type="file" id="socket_picture" onchange="sendPicture()">
-				<span id="upload_cover_image" style="Opacity: 0.7;"><img src="/images/photo.png"></span>
-			</label>
-		</div>
+	<div class = "mark">
+		<b style="font-size:20px">最近出沒地點</b></br>
+		<img src="/images/placeholder.png"> : 走失地點
+		<img src="/images/pin.png"> : 回報出現地點(點擊標記可觀看回報相關資訊)
+		<div class="map_container"><div id="map"></div></div>
+		<b style="font-size:16px">若發現該寵物出現, 請在以下回報地點</b></br>
+		請輸入地址: </br><input type="text" id="insert_mark"></input>
+		<button id="select_current_spot">存取目前位置</button></br>
+		請輸入發現時間等其他資訊: </br><textarea id="insert_info" type = "textarea" placeholder = "ex: 1/10上午10點發現, 與其他流浪犬集體出現" style="width:250px;height:50px;"></textarea></br>			
+		<button id="submit_mark">送出</button>
+	</div>
 	</div>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/locale/zh-tw.js'></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&libraries=places"></script>
 <script>
 	//google map code start
 	console.log("開始執行map script");
@@ -297,6 +302,7 @@
 		picture_file.src = detail.picture;
 		document.getElementsByClassName("picture")[0].appendChild(picture_file);
 		var name = document.createElement("td");
+		name.className = "column_name";
 		name.appendChild(document.createTextNode("姓名"));
 		var name_value = document.createElement("td");
 		name_value.appendChild(document.createTextNode(detail.name));
@@ -304,41 +310,69 @@
 		name_tr.appendChild(name);
 		name_tr.appendChild(name_value);
 		document.getElementsByClassName("information")[0].appendChild(name_tr);
-		var gender = document.createElement("div");
-		gender.className = "gender";
-		var pet_gender = document.createTextNode("性別: "+detail.gender);
-		gender.appendChild(pet_gender);
-		document.getElementsByClassName("information")[0].appendChild(gender);
-		var age = document.createElement("div");
-		age.className = "age";
-		var pet_age = document.createTextNode("年齡: "+detail.age);
-		age.appendChild(pet_age);
-		document.getElementsByClassName("information")[0].appendChild(age);
-		var breed = document.createElement("div");
-		breed.className = "breed";
-		var pet_breed = document.createTextNode("品種: "+detail.breed);
-		breed.appendChild(pet_breed);
-		document.getElementsByClassName("information")[0].appendChild(breed);
-		var color = document.createElement("div");
-		color.className = "color";
-		var pet_color = document.createTextNode("顏色: "+detail.color);
-		color.appendChild(pet_color);
-		document.getElementsByClassName("information")[0].appendChild(color);
-		var lost_location = document.createElement("div");
-		lost_location.className = "lost_location";
-		var pet_lost_location = document.createTextNode("走失地點: "+detail.lost_location);
-		lost_location.appendChild(pet_lost_location);
-		document.getElementsByClassName("information")[0].appendChild(lost_location);
-		var lost_time = document.createElement("div");
-		lost_time.className = "lost_time";
-		var pet_lost_time = document.createTextNode("走失時間: "+detail.lost_time);
-		lost_time.appendChild(pet_lost_time);
-		document.getElementsByClassName("information")[0].appendChild(lost_time);
-		var other = document.createElement("div");
-		other.className = "other";
-		var pet_other = document.createTextNode("其他: "+detail.other);
-		other.appendChild(pet_other);
-		document.getElementsByClassName("information")[0].appendChild(other);
+		var gender = document.createElement("td");
+		gender.className = "column_name";
+		gender.appendChild(document.createTextNode("性別"));
+		var gender_value = document.createElement("td");
+		gender_value.appendChild(document.createTextNode(detail.gender));
+		var gender_tr = document.createElement("tr");
+		gender_tr.appendChild(gender);
+		gender_tr.appendChild(gender_value);
+		document.getElementsByClassName("information")[0].appendChild(gender_tr);
+		var age = document.createElement("td");
+		age.className = "column_name";
+		age.appendChild(document.createTextNode("年齡"));
+		var age_value = document.createElement("td");
+		age_value.appendChild(document.createTextNode(detail.age));
+		var age_tr = document.createElement("tr");
+		age_tr.appendChild(age);
+		age_tr.appendChild(age_value);
+		document.getElementsByClassName("information")[0].appendChild(age_tr);
+		var breed = document.createElement("td");
+		breed.className = "column_name";
+		breed.appendChild(document.createTextNode("品種"));
+		var breed_value = document.createElement("td");
+		breed_value.appendChild(document.createTextNode(detail.breed));
+		var breed_tr = document.createElement("tr");
+		breed_tr.appendChild(breed);
+		breed_tr.appendChild(breed_value);
+		document.getElementsByClassName("information")[0].appendChild(breed_tr);
+		var color = document.createElement("td");
+		color.className = "column_name";
+		color.appendChild(document.createTextNode("顏色"));
+		var color_value = document.createElement("td");
+		color_value.appendChild(document.createTextNode(detail.color));
+		var color_tr = document.createElement("tr");
+		color_tr.appendChild(color);
+		color_tr.appendChild(color_value);
+		document.getElementsByClassName("information")[0].appendChild(color_tr);
+		var lost_location = document.createElement("td");
+		lost_location.className = "column_name";
+		lost_location.appendChild(document.createTextNode("走失地點"));
+		var lost_location_value = document.createElement("td");
+		lost_location_value.appendChild(document.createTextNode(detail.lost_location));
+		var lost_location_tr = document.createElement("tr");
+		lost_location_tr.appendChild(lost_location);
+		lost_location_tr.appendChild(lost_location_value);
+		document.getElementsByClassName("information")[0].appendChild(lost_location_tr);
+		var lost_time = document.createElement("td");
+		lost_time.className = "column_name";
+		lost_time.appendChild(document.createTextNode("走失時間"));
+		var lost_time_value = document.createElement("td");
+		lost_time_value.appendChild(document.createTextNode(detail.lost_time));
+		var lost_time_tr = document.createElement("tr");
+		lost_time_tr.appendChild(lost_time);
+		lost_time_tr.appendChild(lost_time_value);
+		document.getElementsByClassName("information")[0].appendChild(lost_location_tr);
+		var other = document.createElement("td");
+		other.className = "column_name";
+		other.appendChild(document.createTextNode("其他資訊"));
+		var other_value = document.createElement("td");
+		other_value.appendChild(document.createTextNode(detail.other));
+		var other_tr = document.createElement("tr");
+		other_tr.appendChild(other);
+		other_tr.appendChild(other_value);
+		document.getElementsByClassName("information")[0].appendChild(other_tr);
 		//google map mark(db current mark) code start
 		var address = detail.lost_location;
 		geocoder.geocode( { 'address': address}, function(results, status) {
@@ -394,6 +428,12 @@
 	}
 	//存取目前位置code end
 	//ajax send mark code start
+	var autocomplete;
+	window.addEventListener('load', () => {
+		initMap();
+		var input = document.getElementById('insert_mark');
+		autocomplete = new google.maps.places.Autocomplete(input);
+	});
 	document.getElementById("submit_mark").addEventListener('click', function(){
 		insert_mark();
 	});
@@ -434,6 +474,5 @@
 	}
 	//ajax send mark code end
 </script>
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&callback=initMap"></script>
 </body>
 </html>

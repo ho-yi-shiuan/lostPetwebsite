@@ -29,7 +29,7 @@ app.post('/', async function(req, result){
 				console.log("帳密符合");
 				//製造新token
 				var date = Date.now();
-				var time = 360000;
+				var time = 3600000;
 				var expire = parseInt(date+time);
 				function createtoken(email){
 					let hash = crypto.createHash('sha256');
@@ -105,7 +105,7 @@ app.post('/', async function(req, result){
 					return token;
 				}
 				token = createtoken(req.body.email+date);
-				var time = 360000;
+				var time = 3600000;
 				var expire = parseInt(date+time);
 				var new_data = {
 					provider: "facebook",
@@ -154,7 +154,7 @@ app.post('/', async function(req, result){
 			var name = req.body.name;
 			//製造新token
 			var date = Date.now();
-			var time = 360000;
+			var time = 3600000;
 			var expire = parseInt(date+time);
 			function createtoken(email){
 				let hash = crypto.createHash('sha256');

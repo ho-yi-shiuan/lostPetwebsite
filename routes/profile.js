@@ -48,6 +48,24 @@ app.post("/", async function(req, res){
 		});
 	})
 	let message = await message_promise;
+	var search_user_mark = "SELECT * from user_mark where user_id = "+info[0].id+";";
+	const mark_promise = new Promise((resolve, reject) => {
+		mysql.con.query(search_user_mark, function(err, result){
+			if(err){
+				console.log(err);
+			}else{
+				console.log("select user mark successfully");
+				resolve(result);
+			}
+		});
+	})
+	let mark = await mark_promise;
+	var mark_array = [];
+	for(k=0; k<mark.length; k++){
+		var location_mark = mark[k].location_lat+", "+mark[k].location_lng;
+		console.log(location_mark);
+		mark_array.push(location_mark);
+	}
 	var picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/";
 	var lost_array = [];
 	for(i=0; i<info.length; i++){
@@ -80,7 +98,8 @@ app.post("/", async function(req, res){
 		email: info[0].email,
 		picture: info[0].picture,
 		lost_pet: lost_array,
-		message: message_array
+		message: message_array,
+		mark: mark_array
 	};
 	var list = {
 		status: "success",

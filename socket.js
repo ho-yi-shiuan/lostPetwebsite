@@ -20,6 +20,7 @@ app.use('/lost_mark', require('./routes/lost_mark'));
 app.use('/signup', require('./routes/signup'));
 app.use('/signin', require('./routes/signin'));
 app.use('/profile', require('./routes/profile'));
+app.use('/user_mark', require('./routes/user_mark'));
 //message api
 app.use('/message', require('./routes/message'));
 

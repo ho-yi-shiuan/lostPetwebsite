@@ -16,6 +16,9 @@
     background-size:cover;	
 }
 
+input {
+	padding: 5px;
+}
 
 /*頂端bar*/
 
@@ -205,6 +208,16 @@
 	align-self: center;
 	background-color: rgba(0,0,0,.5);
 	border: 1px solid rgba(0,0,0,.125);	
+}
+
+.userprofile {
+	text-align: center;
+}
+
+#profile_map {
+	width: 50%;
+	height: 200px;
+	margin: 0 auto;
 }
 
 .user_lost_data, .message {
