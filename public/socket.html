@@ -115,7 +115,16 @@
 					console.log(res);
 					user_picture = res.data.picture;
 					user_name = res.data.name;
-					init_socket(user_name);
+					//拆解網址找出id
+					var url = location.href;
+					var room_id = url.split('=');
+					console.log("room_id = "+room_id[1]);
+					var user_info = {
+						user_name: res.data.name,
+						room_id: room_id[1]
+						//應該要傳roomId
+					}
+					init_socket(user_info);
 				}
 			},
 			error: function(err)
@@ -130,10 +139,11 @@
 	}
 	//socket code start
 	console.log("開始執行socket script");
-	socket = io.connect();
-	function init_socket(user_name){
-		socket.on('connect', function () {
-			socket.emit('join', user_name);
+	var socket;
+	function init_socket(user_info){
+		socket = io.connect();
+		socket.on('connect', function (){
+			socket.emit('join', user_info);
 		});
 		//顯示歷史訊息
 		socket.on('history', function(history_obj){
@@ -142,9 +152,19 @@
 			if (history_obj.length > 0) {
 				appendData(history_obj);
 			}
-		});	
+		});
+		//收到後端傳來的圖片處理
+		socket.on('receiveImg', (obj) => {
+			console.log(obj);
+			appendImage(obj);
+		})
+		//收到後端傳來的訊息如何處理
+		socket.on('message', function(message_obj){
+			console.log(message_obj);
+			appendData([message_obj]);
+		});
 	}
-	//找出使用者資料code end
+	//socket code end
 
 	function keyLogin(){
 		if (event.keyCode==13){//enter的鍵值為13
@@ -163,7 +183,6 @@
 		let data = {
 			name: user_name,
 			content: content,
-			aaa: "aaa"
 		};
 		//傳訊息給後端
 		console.log(data);
@@ -171,7 +190,6 @@
 		document.querySelector('#content').value = '';
 	}
 	//傳送圖片檔
-	
 	function sendPicture(){
 		let Imginput = document.getElementById('socket_picture');
 		let file = Imginput.files[0];
@@ -186,11 +204,6 @@
 			socket.emit('sendImg', data);
 		}	
 	}
-	//收到後端傳來的圖片處理
-	socket.on('receiveImg', (obj) => {
-		console.log(obj);
-		appendImage(obj);
-	})
 	var picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/";
 	//var local_member_picture = "https://d2h10qrqll8k7g.cloudfront.net/person_project/image/";
 	function appendImage(obj){		
@@ -231,12 +244,6 @@
 		document.getElementsByClassName("chats")[0].appendChild(chat);
 		scrollWindow();
 	}
-
-	//收到後端傳來的訊息如何處理
-	socket.on('message', function(message_obj){
-		console.log(message_obj);
-		appendData([message_obj]);
-	});
 
 	function appendData(obj){
 		obj.forEach(function(element){
@@ -288,7 +295,7 @@
 		let h = document.querySelector('.chats');//回傳第一個找到的class
 		h.scrollTo(0, h.scrollHeight);
 	}
-	//socket code end
+
 	//ajax code start
 	let urlParams = new URLSearchParams(window.location.search);
 	let id = urlParams.get('id')

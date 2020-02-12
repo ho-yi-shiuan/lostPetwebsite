@@ -8,23 +8,17 @@ app.use(bodyParser.json());
 
 app.post('/', async function(req, res){
 	console.log(req.body);
-	var delete_case = "DELETE FROM lost_pet WHERE pet_id="+req.body.delete_id+";";
-	var delete_room = "DROP TABLE socket"+req.body.delete_id+";";
-	mysql.con.query(delete_case, function(err, result){
+	var update_status = "UPDATE lost_pet SET lost_status = \""+req.body.close_status+"\" where pet_id = "+req.body.close_id;
+	console.log(update_status);
+	mysql.con.query(update_status, function(err,result){
 		if(err){
+			console.log("close_case api: ");
 			console.log(err);
 		}else{
-			console.log("delete row from lost_pet suscessfully!");
-		}
-	});	
-	mysql.con.query(delete_room, function(err, result){
-		if(err){
-			console.log(err);
-		}else{
-			console.log("delete room suscessfully!");
+			console.log("update lost_status successful!");
+			res.send({status: "success"});
 		}
 	});
-	res.send({delete_result: "success"});
 });
 	
 module.exports = app;

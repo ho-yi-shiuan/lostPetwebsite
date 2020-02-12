@@ -25,7 +25,47 @@
 	</div>
 	</header>
 	<div class="search_background">
-	
+	<form action="/lost_record" id="select_form" method="GET" enctype="multipart/form-data">
+	<div>請選擇類別</br>
+		<input type="checkbox" name="select_category" value="dog" checked>狗
+		<input type="checkbox" name="select_category" value="cat" checked>貓
+	</div>
+	<div>請選擇品種(選貓要只剩貓的類別)</br>
+		<select name="select_breed" multiple="multiple">
+			<option value="米克斯">米克斯</option>
+			<option value="貴賓">貴賓</option>
+			<option value="柯基">柯基</option>
+			<option value="哈士奇">哈士奇</option>
+			<option value="黃金獵犬">黃金獵犬</option>
+			<option value="拉布拉多">拉布拉多</option>
+			<option value="柴犬">柴犬</option>
+			<option value="秋田">秋田</option>
+			<option value="古代牧羊犬">古代牧羊犬</option>
+			<option value="混種貓">混種貓</option>
+			<option value="摺耳貓">摺耳貓</option>
+			<option value="金吉拉">金吉拉</option>
+			<option value="波斯貓">波斯貓</option>
+			<option value="金吉拉">金吉拉</option>
+		</select>
+	</div>
+	<div>請選擇顏色</br>
+		<select name="select_color" multiple="multiple">
+			<option value="黑">黑色</option>
+			<option value="白">白色</option>
+			<option value="咖啡">咖啡色</option>
+			<option value="灰">灰色</option>
+			<option value="橘">橘色</option>
+		</select>
+	</div>
+	<div>請選擇性別</br>
+		<input type="checkbox" name="select_gender" value="female" checked>女
+		<input type="checkbox" name="select_gender" value="male" checked>男
+	</div>
+		<div>依地區搜尋</br>
+		<input type="text" name="select_location" placeholder="ex: 台北市信義區">
+	</div>
+	<input id="submit" type="submit" value="搜尋">
+	</form>
 	</div>
 	<div class="index_body">
 		<div class="lost_pets">

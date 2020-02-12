@@ -28,8 +28,10 @@
 	<div class="userprofile">
 		<div class="head">會員資料</div>
 		<hr id="divider">
-		<div class="nameline">姓名: <div id="successname"></div></div></br>
-		<div class="emailline">信箱: <div id="successemail"></div></div></br>
+		<div class="user_line">
+			<div class="nameline">姓名: <div id="successname"></div></div></br>
+			<div class="emailline">信箱: <div id="successemail"></div></div></br>
+		</div>
 		請輸入住家, 公司等常出現位置, 若有寵物在附近走失可得知訊息: </br>
 		<input type="text" id="input_address"></input>
 		<button id="select_current_spot">存取目前位置</button><button id="submit_mark">送出</button>
@@ -49,11 +51,15 @@
 	<div class="user_lost_data">
 		<div class="head">協尋中寵物</div>
 	</div>
+	<div class="user_past_lost_data">
+		<div class="head">協尋記錄</div>
+	</div>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/locale/zh-tw.js'></script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&libraries=places"></script>
-<script>
-var user_id;
+<script>	
+	var user_id;
 	function getCookie(name)
 	{
 		var arr = document.cookie.match(new RegExp("(^| )"+name+"=([^;]*)(;|$)"));
@@ -232,7 +238,6 @@ var user_id;
 		for(i=0; i<res.length; i++){
 			var divider = document.createElement("hr");
 			divider.id = "divider";
-			document.getElementsByClassName("user_lost_data")[0].appendChild(divider);
 			var profile_pet = document.createElement("div");
 			profile_pet.className = "profile_pet";
 			var profile_pet_picture = document.createElement("div");
@@ -295,29 +300,72 @@ var user_id;
 			var element_other = document.createTextNode("其他資訊: "+res[i].other);
 			profile_pet_other.appendChild(element_other);
 			profile_pet_data.appendChild(profile_pet_other);
-			
 			var close_case = document.createElement("div");
 			close_case.className = "close_case";
-			close_case.onclick = function(){close(res[i].id);};
-			var delete_div = document.createElement("div");
-			delete_div.id = "delete";
-			var delete_image = document.createElement("img");
-			delete_image.style = "height: 100%";
-			delete_image.src = "/images/delete.png";
-			delete_div.appendChild(delete_image);
 			var delete_message = document.createElement("div");
-			var message_content_start = document.createTextNode("寵物已經回家, ");
+			var message_content_start = document.createTextNode("關閉協尋");
 			delete_message.appendChild(message_content_start);
 			delete_message.appendChild(document.createElement("br"));
-			var message_content_end = document.createTextNode("關閉協尋頁面");
+			var message_content_end = document.createTextNode("傳送訊息通知頁面中用戶: ");
 			delete_message.appendChild(message_content_end);
-			
-			close_case.appendChild(delete_div);
+			delete_message.style="text-align: center";
 			close_case.appendChild(delete_message);
+			var close_status = document.createElement("div");
+			close_status.className = "close_status";
+			var close_socket = document.createElement("textarea");
+			close_socket.className = "close_message"+res[i].id;
+			close_socket.placeholder = "ex: 寵物已找到, 非常感謝大家的幫忙!!";
+			close_socket.rows = "5";
+			close_socket.cols = "25";
+			close_case.appendChild(close_socket);
+			close_case.appendChild(document.createElement("br"));
+			close_case.appendChild(document.createTextNode("請問寵物最後是否有找到? "));
+			close_case.appendChild(document.createElement("br"));
+			var radio_form = document.createElement("form");
+			radio_form.id = "radio_form"+res[i].id;
+			var found = document.createElement("input");
+			found.type = "radio";
+			var found_text = document.createTextNode("已找到");
+			found.name = "pet_found";
+			found.value = "end_found";
+			var unfound = document.createElement("input");
+			unfound.type = "radio";
+			var unfound_text = document.createTextNode("未找到");
+			unfound.name = "pet_found";
+			unfound.value = "end_unfound";
+			radio_form.appendChild(found);
+			radio_form.appendChild(found_text);
+			radio_form.appendChild(unfound);
+			radio_form.appendChild(unfound_text);
+			close_case.appendChild(radio_form);
+			var send_button = document.createElement("button");
+			send_button.id = "send_close";
+			send_button.setAttribute("onclick", "message_to_room("+res[i].id+")");
+			var button_value = document.createTextNode("送出");
+			send_button.appendChild(button_value);
+			send_button.style = "height: 30px; width: 60px; margin: 0 auto;";
+			close_case.appendChild(send_button);
 			
 			profile_pet.appendChild(profile_pet_data);
-			profile_pet.appendChild(close_case);
-			document.getElementsByClassName("user_lost_data")[0].appendChild(profile_pet);
+			if(res[i].lost_status == "end_found"){
+				var status_found_text = document.createTextNode("是否協尋成功: 是");
+				var status_found = document.createElement("div");
+				status_found.appendChild(status_found_text);
+				profile_pet_data.appendChild(status_found);
+				document.getElementsByClassName("user_past_lost_data")[0].appendChild(divider);
+				document.getElementsByClassName("user_past_lost_data")[0].appendChild(profile_pet);						
+			}else if(res[i].lost_status == "end_unfound"){
+				var status_unfound_text = document.createTextNode("是否協尋成功: 否");
+				var status_unfound = document.createElement("div");
+				status_unfound.appendChild(status_unfound_text);
+				profile_pet_data.appendChild(status_unfound);
+				document.getElementsByClassName("user_past_lost_data")[0].appendChild(divider);
+				document.getElementsByClassName("user_past_lost_data")[0].appendChild(profile_pet);					
+			}else{
+				profile_pet.appendChild(close_case);
+				document.getElementsByClassName("user_lost_data")[0].appendChild(divider);
+				document.getElementsByClassName("user_lost_data")[0].appendChild(profile_pet);			
+			}
 		}
 	}
 	function append_message(message){
@@ -343,24 +391,46 @@ var user_id;
 			}
 		}
 	}
-	function close(id){
-		console.log("執行刪除");
-		var delete_id = {
-			delete_id: id
+	function message_to_room(room_id){
+		console.log(room_id);
+		var user_info = {
+			user_name: document.getElementById("successname").innerHTML,
+			room_id: room_id
 		}
+		var socket = io.connect();
+		socket.on('connect', function (){
+			socket.emit('join', user_info);
+		});
+		let data = {
+			name: document.getElementById("successname").innerHTML,
+			content: document.getElementsByClassName("close_message"+room_id)[0].value,
+		};
+		console.log(data);
+		socket.emit('message_to_backend', data);
+		var status = {
+			close_id: room_id
+		};
+		var form = document.getElementById("radio_form"+room_id);
+		for(var i=0; i<form.pet_found.length;i++){
+			if(form.pet_found[i].checked){
+				status.close_status = form.pet_found[i].value;
+				console.log("form radio status = "+form.pet_found[i].value);
+			}
+		}
+		
+		//包裝要 ajax 的東西
 		$.ajax({
 			contentType :"application/json",
 			type: "POST",
 			url: "/close_case",
-			data: JSON.stringify(delete_id),
+			data: JSON.stringify(status),
 			success: function(res)
 				{
-					if(res.delete_result == "success"){
-						document.location.href = "/profile.html";
-					}
+					console.log(res);
+					document.location.href = "/profile.html";
 				},
 			dataType: "json"
-		});		
+		});
 	}
 </script>
 </span>

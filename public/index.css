@@ -81,7 +81,12 @@ input {
 	padding-top: 5px;
 }
 
-/* 內容圖片 */
+/* 首頁 */
+
+#select_form {
+	display: flex;
+	flex-direction: row;
+}
 
 .index_body {
 	margin: 0 auto;
@@ -200,7 +205,7 @@ input {
 
 /*profile page*/
 
-.userprofile, .user_lost_data, .message {
+.userprofile, .user_lost_data, .message, .user_past_lost_data {
 	color: white;
 	margin: 0 auto;
 	width: 60%;
@@ -220,7 +225,7 @@ input {
 	margin: 0 auto;
 }
 
-.user_lost_data, .message {
+.user_lost_data, .message, .user_past_lost_data {
 	margin-top: 20px;
 }
 

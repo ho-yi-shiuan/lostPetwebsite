@@ -30,15 +30,16 @@ var roomInfo = {};
 
 // 當發生連線事件
 io.on('connection', async function(socket){
-	//拆解網址找出id
-	var url = socket.request.headers.referer;
-	var splited = url.split('=');
-	var room_id = splited[splited.length - 1];
-	//加入房間
-	socket.join(room_id);
-	console.log('有人加入了room ' + room_id);
+	console.log("socket js: socket connected");
+	var room_id;
+	socket.on("join", async function(obj){
+		console.log("要加入聊天室的使用者資料為: ");
+		console.log(obj);
+		room_id = obj.room_id;
+		//加入房間
+		socket.join(room_id);
+		console.log(obj.user_name + '加入了room ' + room_id);
 	//歷史訊息
-	//console.log("SELECT name, content, content_type, time from socket"+room_id);
 	const messsage_promise = new Promise((resolve, reject) => {
 		mysql.con.query("SELECT name, content, content_type, time from socket"+room_id, function(err,res){
 			if(err){
@@ -50,11 +51,15 @@ io.on('connection', async function(socket){
 		})
 	})
 	const history = await messsage_promise;
-	console.log("後端送出歷史訊息如下:");
-	console.log(history);
+	console.log("後端送出歷史訊息in room "+room_id);
 	const socketid = socket.id;
 	io.to(socketid).emit('history', history);
-	
+	});	
+	//關閉協尋訊息事件
+	socket.on("close_message_to_backend", function(obj){
+		console.log("收到的關閉訊息為: ");
+		console.log(obj);
+	});
 	//接收前端message事件
 	socket.on("message_to_backend", function(obj){
 		console.log("收到前端: ");
