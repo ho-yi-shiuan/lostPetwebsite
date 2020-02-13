@@ -27,21 +27,42 @@ app.post('/', upload.single('image'), async function(req, res){
 	//待辦:
 	//是否要做transaction?
 	var lost_data_id;
-	var lost_data = {
-		category: req.body.category,
-		pet_name: req.body.pet_name,
-		pet_picture: req.file.key,
-		gender: req.body.pet_gender,
-		age: req.body.pet_age,
-		breed: req.body.pet_breed,
-		color: req.body.pet_color,
-		lost_location: req.body.input_address,
-		lost_location_lng: req.body.lost_address_lng,
-		lost_location_lat: req.body.lost_address_lat,
-		lost_time: req.body.lost_time,
-		other: req.body.other,
-		user_id: req.body.user_id,
-		lost_status: "finding"
+	var lost_data;
+	if(req.body.post_type == "lost"){
+		lost_data = {
+			category: req.body.category,
+			pet_name: req.body.pet_name,
+			pet_picture: req.file.key,
+			gender: req.body.pet_gender,
+			age: req.body.pet_age,
+			breed: req.body.pet_breed,
+			color: req.body.pet_color,
+			lost_location: req.body.input_address,
+			lost_location_lng: req.body.lost_address_lng,
+			lost_location_lat: req.body.lost_address_lat,
+			lost_time: req.body.lost_time,
+			other: req.body.other,
+			user_id: req.body.user_id,
+			lost_status: "finding",
+			post_type: req.body.post_type
+		}		
+	}else if(req.body.post_type == "find"){
+		lost_data = {
+			category: req.body.category,
+			pet_picture: req.file.key,
+			gender: req.body.pet_gender,
+			age: req.body.pet_age,
+			breed: req.body.pet_breed,
+			color: req.body.pet_color,
+			lost_location: req.body.input_address,
+			lost_location_lng: req.body.lost_address_lng,
+			lost_location_lat: req.body.lost_address_lat,
+			lost_time: req.body.lost_time,
+			other: req.body.other,
+			user_id: req.body.user_id,
+			lost_status: "finding",
+			post_type: req.body.post_type
+		}			
 	}
 	const insert_lost_pet_promise = new Promise((resolve, reject) => {
 		mysql.con.query("INSERT INTO lost_pet set?",lost_data,function(err, result){
@@ -70,53 +91,52 @@ app.post('/', upload.single('image'), async function(req, res){
 			res.redirect("/");
 		}
 	});	
-	//1. 篩出db裡會員經緯度在一定範圍內的
-	//2. 幫他們insert message
-	//lost_location_lng: req.body.lost_address_lng,
-	//lost_location_lat: req.body.lost_address_lat,	
-	//一度經緯度距離約為111 km, 撈經度± 0.1,緯度± 0.1
-	var select_mark = "SELECT user_id from user_mark WHERE location_lng BETWEEN "+req.body.lost_address_lng+"-0.05 AND "+req.body.lost_address_lng+"+0.05 AND location_lat BETWEEN "+req.body.lost_address_lat+"-0.05 AND "+req.body.lost_address_lat+"+0.05;";
-	const mark_promise = new Promise((resolve, reject) => {
-		mysql.con.query(select_mark, function(err, result){
-			if(err){
-				console.log("lost_record api(mark): \n");
-				console.log(err);
-			}else{
-				console.log("找出經緯度±0.1的會員成功");
-				resolve(result);
-			}
-		});
-	})	
-	let near_user = await mark_promise;	
-	let near_user_array = [];
-	for(j=0; j<near_user.length; j++){
-		//篩掉重複的user_id
-		//insert message
-		near_user_array.push(near_user[j].user_id);
-	}
-	console.log("array: "+near_user_array);
-	var result = near_user_array.filter(function(element, index, arr){
-		return arr.indexOf(element)=== index;
-	});
-	console.log(result);
-	for(k=0; k<result.length; k++){
-		if(result[k] != req.body.user_id){
-			var insert_message = {
-				send_id: 0,
-				send_time: Date.now(),
-				receive_id: result[k],
-				content: "有寵物在您附近走失, 請點訊息前往",
-				link_id: insert_lost_pet.insertId
-			}
-			mysql.con.query("INSERT INTO message set?", insert_message, function(err, result){
+	
+	//要改成只有選擇post lost的時候才做 //要測試
+	if(req.body.post_type == "lost"){
+		var select_mark = "SELECT user_id from user_mark WHERE location_lng BETWEEN "+req.body.lost_address_lng+"-0.05 AND "+req.body.lost_address_lng+"+0.05 AND location_lat BETWEEN "+req.body.lost_address_lat+"-0.05 AND "+req.body.lost_address_lat+"+0.05;";
+		const mark_promise = new Promise((resolve, reject) => {
+			mysql.con.query(select_mark, function(err, result){
 				if(err){
 					console.log("lost_record api(mark): \n");
 					console.log(err);
 				}else{
 					console.log("找出經緯度±0.1的會員成功");
+					resolve(result);
 				}
-			});					
+			});
+		})	
+		let near_user = await mark_promise;	
+		let near_user_array = [];
+		for(j=0; j<near_user.length; j++){
+			//篩掉重複的user_id
+			//insert message
+			near_user_array.push(near_user[j].user_id);
 		}
+		console.log("array: "+near_user_array);
+		var result = near_user_array.filter(function(element, index, arr){
+			return arr.indexOf(element)=== index;
+		});
+		console.log(result);
+		for(k=0; k<result.length; k++){
+			if(result[k] != req.body.user_id){
+				var insert_message = {
+					send_id: 0,
+					send_time: Date.now(),
+					receive_id: result[k],
+					content: "有寵物在您附近走失, 請點訊息前往",
+					link_id: insert_lost_pet.insertId
+				}
+				mysql.con.query("INSERT INTO message set?", insert_message, function(err, result){
+					if(err){
+						console.log("lost_record api(mark): \n");
+						console.log(err);
+					}else{
+						console.log("找出經緯度±0.1的會員成功");
+					}
+				});					
+			}
+		}		
 	}
 });
 
@@ -124,6 +144,15 @@ app.get('/', async function(req, res){
 	console.log(req.query);
 	//篩選類別, 品種, 性別
 	var select_array = [];
+	if(typeof(req.query.post_type) == "object"){
+		let post_type_query = " post_type in (?)";
+		let post_type_array = [post_type_query,req.query.post_type];
+		select_array.push(post_type_array);
+	}else if(typeof(req.query.post_type) == "string"){
+		let post_type_query = " post_type in (?)";
+		let post_type_array = [post_type_query,[req.query.post_type]];
+		select_array.push(post_type_array);
+	}
 	if(typeof(req.query.select_category) == "object"){
 		let category_query = " category in (?)";
 		let category_array = [category_query,req.query.select_category];

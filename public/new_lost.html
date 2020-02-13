@@ -31,6 +31,10 @@
 		<hr id="divider">
 		<div class="form_container">
 			<form action="/lost_record" method="POST" enctype="multipart/form-data">
+				<div>
+					<input type="radio" name="post_type" value="lost" style="margin-left: 15%;"> 寵物走失, 需要協尋</br>
+					<input type="radio" name="post_type" value="find" style="margin-left: 15%;"> 發現疑似走失寵物</br></br>
+				</div>
 				<div>請選擇走失寵物類別:
 					<input type="radio" name="category" value="dog"> 狗
 					<input type="radio" name="category" value="cat"> 貓</br> 
