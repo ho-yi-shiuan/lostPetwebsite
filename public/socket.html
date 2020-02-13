@@ -5,115 +5,481 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <link rel=stylesheet type="text/css" href="./socket.css">
-
 </head>
 <body>
-<div class = "body">
-	<div class = "profile_map">
-		<div class = "profile">
-		
+<span style="font-family:Microsoft JhengHei;">
+	<header>
+	<div class = "mainheader_socket">
+		<a href="/index.html"><div id = "logo"><img src="/images/pet_logo.png" height=100%></div></a>
+		<div id="sidelist_container">
+			<ul class="sidelist">
+				<li><a href="/index.html" style="text-decoration: none; color: black;">走失總覽</a></li>
+				<li>｜</li>
+				<li><a href="/index.html" style="text-decoration: none; color: black;">拾獲總覽</a></li>
+				<li>｜</li>
+				<li><a href="/new_lost.html" style="text-decoration: none; color: black;">我要刊登</a></li>
+				<li>｜</li>
+				<li><a href="/profile.html" style="text-decoration: none; color: black;">會員頁面</a></li>
+			</ul>
 		</div>
-		<div id="map">
-		
-		</div>	
 	</div>
-	<div class = "chatroom">
-		<div class="chats">
+	</header>
+	<div class="body">
+	<div class = "profile_body">
+		<div class = "profile_map">
+				<div class = "picture"></div>
+				<table width=100% class = "information"></table>
 		</div>
-		<div class="message">
-			<input id="name" type="text" placeholder="your name" />
-			<input id="content" type="text" placeholder="input the message" />
-			<button type="button">送出</button>
+		<div class = "chatroom" onkeydown="keyLogin();">
+			<div class="chats">
+			</div>
+			<div class="message_container">
+			<div class="message">
+				<input id="content" type="text" placeholder="input the message" />
+				<img id="submit_message" src="/images/send.png" style="margin-right: 5px; Opacity: 0.7;">
+				<label class="upload_cover">
+					<input type="file" id="socket_picture" onchange="sendPicture()">
+					<span id="upload_cover_image" style="Opacity: 0.7;"><img src="/images/photo.png"></span>
+				</label>
+			</div>
+			</div>
 		</div>
+	</div>
+	<div class = "mark">
+		<b style="font-size:20px">最近出沒地點</b></br>
+		<img src="/images/placeholder.png"> : 走失地點
+		<img src="/images/pin.png"> : 回報出現地點(點擊標記可觀看回報相關資訊)
+		<div class="map_container"><div id="map"></div></div>
+		<b style="font-size:16px">若發現該寵物出現, 請在以下回報地點</b></br>
+		請輸入地址: </br><input type="text" id="insert_mark"></input>
+		<button id="select_current_spot">存取目前位置</button></br>
+		請輸入發現時間等其他資訊: </br><textarea id="insert_info" type = "textarea" placeholder = "ex: 1/10上午10點發現, 與其他流浪犬集體出現" style="width:250px;height:50px;"></textarea></br>			
+		<button id="submit_mark">送出</button>
+	</div>
 	</div>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/locale/zh-tw.js'></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&libraries=places"></script>
 <script>
-//google map code start
-console.log("開始執行map script");
-var map;
-function initMap() {
-	console.log("執行init map");
-	  map = new google.maps.Map(document.getElementById('map'), {
-		center: {lat: -34.397, lng: 150.644},
-		zoom: 8
-	  });
-}
-//googlt map code end
-//socket code start
-console.log("開始執行socket script");
-socket = io.connect();
-document.querySelector('button').addEventListener('click', function(){
-	Send();
-});
+	//google map code start
+	console.log("開始執行map script");
+	var map;
+	function initMap() {
+		console.log("執行init map");
+		geocoder = new google.maps.Geocoder();
+		map = new google.maps.Map(document.getElementById('map'), {
+			zoom: 15
+		});
+	}
+	//googlt map code end
+	//找出使用者資料code start
+	var user_name;
+	var user_picture;
+	var cookiesend = {};
+	function getcookie()
+	{
+		var cookies = document.cookie.split(";");
+		console.log(cookies);
+		for(i=0;i<cookies.length;i++)
+		{
+			var c = cookies[i].trim();//去空白
+			if(c.indexOf("user=") >= 0)//回傳找到的第一個
+			{
+				//找到user cookie, 直接拿token去登入, 回傳會員資料
+				cookiesend.cookie = c.substring(5,c.length);
+				return("2");
+			}
+		}
+	}
 
-function Send() {
+	var cookieresult = getcookie();
+	if(cookieresult == "2")
+	{
+		$.ajax({
+			contentType :"application/json",
+			type: "POST",
+			url: "/profile",
+			data: JSON.stringify(cookiesend),
+			success: function(res)
+			{
+				if(res.status == "expired"){
+					alert('Token 已過期, 請重新登入');
+					document.location.href = "/signin.html";
+				}else if(res.status == "wrong"){
+					alert('無登入紀錄, 請登入');
+					document.location.href = "/signin.html";
+				}else{
+					console.log(res);
+					user_picture = res.data.picture;
+					user_name = res.data.name;
+					//拆解網址找出id
+					var url = location.href;
+					var room_id = url.split('=');
+					console.log("room_id = "+room_id[1]);
+					var user_info = {
+						user_name: res.data.name,
+						room_id: room_id[1]
+						//應該要傳roomId
+					}
+					init_socket(user_info);
+				}
+			},
+			error: function(err)
+			{
+				console.log(err);
+			},
+			dataType: "json"
+			});
+	}
+	else{
+		document.location.href="/signin.html";
+	}
+	//socket code start
+	console.log("開始執行socket script");
+	var socket;
+	function init_socket(user_info){
+		socket = io.connect();
+		socket.on('connect', function (){
+			socket.emit('join', user_info);
+		});
+		//顯示歷史訊息
+		socket.on('history', function(history_obj){
+			console.log("前端收到歷史訊息");
+			console.log(history_obj);
+			if (history_obj.length > 0) {
+				appendData(history_obj);
+			}
+		});
+		//收到後端傳來的圖片處理
+		socket.on('receiveImg', (obj) => {
+			console.log(obj);
+			appendImage(obj);
+		})
+		//收到後端傳來的訊息如何處理
+		socket.on('message', function(message_obj){
+			console.log(message_obj);
+			appendData([message_obj]);
+		});
+	}
+	//socket code end
 
-    let name = document.querySelector('#name').value;
-    let content = document.querySelector('#content').value;
-    if (!content && !name) {
-        alert('請輸入姓名和訊息');
-        return;
-    }
-    let data = {
-        name: name,
-        content: content,
-    };
-	//傳訊息給後端
-	console.log(data);
-    socket.emit('message', data);
-    document.querySelector('#content').value = '';
- 
-}
-
-//顯示歷史訊息
-socket.on('history', function(obj){
-    if (obj.length > 0) {
-        appendData(obj);
-    }
-});
-
-//收到後端傳來的訊息如何處理
-socket.on('message', (obj) => {
-    console.log(obj);
-    appendData([obj]);
-});
-
-function appendData(obj){
-	obj.forEach(function(element){
+	function keyLogin(){
+		if (event.keyCode==13){//enter的鍵值為13
+			document.getElementById("submit_message").click(); //觸動按鈕的點擊			
+		}
+	}
+	document.getElementById("submit_message").addEventListener('click', function(){
+		Send();
+	});
+	function Send() {
+		let content = document.querySelector('#content').value;
+		if (!content && !name) {
+			alert('請輸入訊息');
+			return;
+		}
+		let data = {
+			name: user_name,
+			content: content,
+		};
+		//傳訊息給後端
+		console.log(data);
+		socket.emit('message_to_backend', data);
+		document.querySelector('#content').value = '';
+	}
+	//傳送圖片檔
+	function sendPicture(){
+		let Imginput = document.getElementById('socket_picture');
+		let file = Imginput.files[0];
+		let reader = new FileReader();
+		reader.readAsDataURL(file);
+		reader.onload =function(){
+			var data = {
+				name: user_name,
+				img: this.result
+			};
+			//let data = {img: this.result};
+			socket.emit('sendImg', data);
+		}	
+	}
+	var picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/";
+	//var local_member_picture = "https://d2h10qrqll8k7g.cloudfront.net/person_project/image/";
+	function appendImage(obj){		
 		var chat = document.createElement("div");
 		chat.className = "chat";
 		var group = document.createElement("div");
 		group.className = "group";
+		var name_content = document.createElement("div");
+		name_content.className = "name_content";
+		var user_picture_container = document.createElement("div");
+		user_picture_container.className = "user_picture";	
+		var user_picture_file = document.createElement("img");
+		user_picture_file.className = "user_picture_file";
+		user_picture_file.src = user_picture;
+		user_picture_container.appendChild(user_picture_file);
+		//把照片跟訊息內容append進一個container, 其flex row
+		name_content.appendChild(user_picture_container);
+		group.appendChild(name_content);//把container append進group
 		var name = document.createElement("div");
 		name.className = "name";
-		var content = document.createElement("div");
-		content.className = "content";
-		var element_name = document.createTextNode(element.name);
-		var element_content = document.createTextNode(element.content);
+		var element_name = document.createTextNode(obj.name);
+		name.appendChild(element_name);
+		name_content.appendChild(name);
+		var content = document.createElement("img");
+		content.className = "chat_picture_file";
+		content.src = picture_s3_url+obj.content;
+		name_content.appendChild(content);
+		group.appendChild(name_content);
+		var time_container = document.createElement("div");
+		time_container.className = "time_container";
 		var time = document.createElement("div");
 		time.className = "time";
-		var element_time = document.createTextNode(moment(element.time).fromNow());
+		var element_time = document.createTextNode(moment(obj.time).fromNow());
 		time.appendChild(element_time);
-		name.appendChild(element_name);
-		content.appendChild(element_content);
-		group.appendChild(name);
-		group.appendChild(content);
+		time_container.appendChild(time);
 		chat.appendChild(group);
-		chat.appendChild(time);
+		chat.appendChild(time_container);
 		document.getElementsByClassName("chats")[0].appendChild(chat);
+		scrollWindow();
+	}
+
+	function appendData(obj){
+		obj.forEach(function(element){
+			var chat = document.createElement("div");
+			chat.className = "chat";
+			var group = document.createElement("div");
+			group.className = "group";
+			var name = document.createElement("div");
+			var name_content = document.createElement("div");
+			name_content.className = "name_content";
+			name.className = "name";
+			if(element.content_type == "text"){
+				var content = document.createElement("div");
+				content.className = "content";
+				var element_content = document.createTextNode(element.content);
+				content.appendChild(element_content);			
+			}else{
+				var content = document.createElement("img");
+				content.className = "chat_picture_file";
+				content.src = picture_s3_url+element.content;			
+			}
+			var element_name = document.createTextNode(element.name);
+			name.appendChild(element_name);
+			var user_picture_container = document.createElement("div");
+			user_picture_container.className = "user_picture";	
+			var user_picture_file = document.createElement("img");
+			user_picture_file.className = "user_picture_file";
+			user_picture_file.src = user_picture;
+			user_picture_container.appendChild(user_picture_file);
+			group.appendChild(user_picture_container);
+			var time_container = document.createElement("div");
+			time_container.className = "time_container";
+			var time = document.createElement("div");
+			time.className = "time";
+			var element_time = document.createTextNode(moment(element.time).fromNow());
+			time.appendChild(element_time);
+			time_container.appendChild(time);
+			name_content.appendChild(name);
+			name_content.appendChild(content);
+			group.appendChild(name_content);
+			chat.appendChild(group);
+			chat.appendChild(time_container);
+			document.getElementsByClassName("chats")[0].appendChild(chat);
+		});
+		scrollWindow();
+	}
+
+	function scrollWindow(){
+		let h = document.querySelector('.chats');//回傳第一個找到的class
+		h.scrollTo(0, h.scrollHeight);
+	}
+
+	//ajax code start
+	let urlParams = new URLSearchParams(window.location.search);
+	let id = urlParams.get('id')
+	const xhr = new XMLHttpRequest();
+	var url = "/lost_detail?id="+id;
+	xhr.open("get", url);
+	xhr.onload = function(){
+		var detail = JSON.parse(this.response);
+		var picture_file = document.createElement("img");
+		picture_file.className = "picture_file";
+		picture_file.src = detail.picture;
+		document.getElementsByClassName("picture")[0].appendChild(picture_file);
+		var name = document.createElement("td");
+		name.className = "column_name";
+		name.appendChild(document.createTextNode("姓名"));
+		var name_value = document.createElement("td");
+		name_value.appendChild(document.createTextNode(detail.name));
+		var name_tr = document.createElement("tr");
+		name_tr.appendChild(name);
+		name_tr.appendChild(name_value);
+		document.getElementsByClassName("information")[0].appendChild(name_tr);
+		var gender = document.createElement("td");
+		gender.className = "column_name";
+		gender.appendChild(document.createTextNode("性別"));
+		var gender_value = document.createElement("td");
+		gender_value.appendChild(document.createTextNode(detail.gender));
+		var gender_tr = document.createElement("tr");
+		gender_tr.appendChild(gender);
+		gender_tr.appendChild(gender_value);
+		document.getElementsByClassName("information")[0].appendChild(gender_tr);
+		var age = document.createElement("td");
+		age.className = "column_name";
+		age.appendChild(document.createTextNode("年齡"));
+		var age_value = document.createElement("td");
+		age_value.appendChild(document.createTextNode(detail.age));
+		var age_tr = document.createElement("tr");
+		age_tr.appendChild(age);
+		age_tr.appendChild(age_value);
+		document.getElementsByClassName("information")[0].appendChild(age_tr);
+		var breed = document.createElement("td");
+		breed.className = "column_name";
+		breed.appendChild(document.createTextNode("品種"));
+		var breed_value = document.createElement("td");
+		breed_value.appendChild(document.createTextNode(detail.breed));
+		var breed_tr = document.createElement("tr");
+		breed_tr.appendChild(breed);
+		breed_tr.appendChild(breed_value);
+		document.getElementsByClassName("information")[0].appendChild(breed_tr);
+		var color = document.createElement("td");
+		color.className = "column_name";
+		color.appendChild(document.createTextNode("顏色"));
+		var color_value = document.createElement("td");
+		color_value.appendChild(document.createTextNode(detail.color));
+		var color_tr = document.createElement("tr");
+		color_tr.appendChild(color);
+		color_tr.appendChild(color_value);
+		document.getElementsByClassName("information")[0].appendChild(color_tr);
+		var lost_location = document.createElement("td");
+		lost_location.className = "column_name";
+		lost_location.appendChild(document.createTextNode("走失地點"));
+		var lost_location_value = document.createElement("td");
+		lost_location_value.appendChild(document.createTextNode(detail.lost_location));
+		var lost_location_tr = document.createElement("tr");
+		lost_location_tr.appendChild(lost_location);
+		lost_location_tr.appendChild(lost_location_value);
+		document.getElementsByClassName("information")[0].appendChild(lost_location_tr);
+		var lost_time = document.createElement("td");
+		lost_time.className = "column_name";
+		lost_time.appendChild(document.createTextNode("走失時間"));
+		var lost_time_value = document.createElement("td");
+		lost_time_value.appendChild(document.createTextNode(detail.lost_time));
+		var lost_time_tr = document.createElement("tr");
+		lost_time_tr.appendChild(lost_time);
+		lost_time_tr.appendChild(lost_time_value);
+		document.getElementsByClassName("information")[0].appendChild(lost_location_tr);
+		var other = document.createElement("td");
+		other.className = "column_name";
+		other.appendChild(document.createTextNode("其他資訊"));
+		var other_value = document.createElement("td");
+		other_value.appendChild(document.createTextNode(detail.other));
+		var other_tr = document.createElement("tr");
+		other_tr.appendChild(other);
+		other_tr.appendChild(other_value);
+		document.getElementsByClassName("information")[0].appendChild(other_tr);
+		//google map mark(db current mark) code start
+		var address = detail.lost_location;
+		geocoder.geocode( { 'address': address}, function(results, status) {
+			if (status == 'OK') {
+				map.setCenter(results[0].geometry.location);
+				var marker = new google.maps.Marker({
+					map: map,
+					position: results[0].geometry.location,//new google.maps.LatLng(22.991965, 120.202518),
+					icon: '/images/placeholder.png'
+				});
+				var infowindow = new google.maps.InfoWindow({
+					content: "走失地"
+				});
+				infowindow.open(map, marker);
+			} else {
+				console.log("地址轉換成經緯度: "+status);
+			}
+		});
+		for(i=0; i<detail.markers.length; i++){
+			let infowindow_content = detail.markers[i].marker_description;
+			geocoder.geocode( { 'address': detail.markers[i].marker_location}, function(results, status) {
+				if (status == 'OK') {
+					var marker = new google.maps.Marker({
+						map: map,
+						position: results[0].geometry.location,//new google.maps.LatLng(22.991965, 120.202518),
+						icon: '/images/pin.png'
+					});
+					var infowindow = new google.maps.InfoWindow({
+						content: infowindow_content
+					});
+					marker.addListener('click', function() {
+						infowindow.open(map, marker);
+					});
+				} else {
+					console.log("地址轉換成經緯度: "+status);
+				}
+			});
+		}
+		//google map mark(db current mark) code end
+	}
+	xhr.send();
+	//ajax code end
+	//存取目前位置code start
+	document.getElementById("select_current_spot").addEventListener('click', function(){
+		get_spot();
 	});
-	scrollWindow();
-}
-
-function scrollWindow(){
-    let h = document.querySelector('.chats');//回傳第一個找到的class
-    h.scrollTo(0, h.scrollHeight);
-}
-//socket code end
-
+	function get_spot(){
+		navigator.geolocation.getCurrentPosition(function(position) {
+			var pos = position.coords.latitude+", "+position.coords.longitude;
+			console.log(pos);
+			document.getElementById("insert_mark").value = pos;
+		});
+	}
+	//存取目前位置code end
+	//ajax send mark code start
+	var autocomplete;
+	window.addEventListener('load', () => {
+		initMap();
+		var input = document.getElementById('insert_mark');
+		autocomplete = new google.maps.places.Autocomplete(input);
+	});
+	document.getElementById("submit_mark").addEventListener('click', function(){
+		insert_mark();
+	});
+	function insert_mark(){
+		var new_mark = {
+			insert_mark:document.getElementById("insert_mark").value,
+			insert_info:document.getElementById("insert_info").value
+		}
+		$.ajax({
+			contentType :"application/json",
+			type: "POST",
+			url: "/lost_mark",
+			data: JSON.stringify(new_mark),
+			success: function(res)
+				{
+					document.getElementById("insert_mark").value = "";
+					insert_info:document.getElementById("insert_info").value = "";
+					geocoder.geocode( { 'address': res.location}, function(results, status) {
+						if (status == 'OK') {
+							var marker = new google.maps.Marker({
+								map: map,
+								position: results[0].geometry.location,//new google.maps.LatLng(22.991965, 120.202518),
+								icon: '/images/pin.png'
+							});
+							var infowindow = new google.maps.InfoWindow({
+								content: res.description
+							});
+							marker.addListener('click', function() {
+								infowindow.open(map, marker);
+							});
+						} else {
+							console.log("地址轉換成經緯度: "+status);
+						}
+					});
+				},
+			dataType: "json"
+			});
+	}
+	//ajax send mark code end
 </script>
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&callback=initMap"></script>
 </body>
 </html>

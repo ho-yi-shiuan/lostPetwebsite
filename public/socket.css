@@ -1,85 +1,227 @@
+*{
+	margin-left:0px;
+	margin-right:0px;
+	margin-bottom: 0px;
+}
 
 a {
   color: #00B7FF;
 }
 
+input {
+	padding: 5px;
+}
+
+/*頂端bar*/
+.mainheader_socket{
+	display: flex;
+	width: 100%;
+	margin: 0px 0px 10px 0px;
+	height: 30px;
+	padding-top: 10px;
+}
+
+#logo{
+	width: 200px;
+	margin-left: 40px;
+	z-index: 1;
+	height: 100%;
+}
+
+.headlist{
+	display: flex;
+	flex-direction: row;
+	float: left;
+	list-style: none; 
+	margin: 5px;
+	padding: 0px;
+}
+
+.headlist li{
+	display: flex;
+	flex-direction: row;
+	float: left;
+	list-style: none; 
+	margin: 5px;
+}
+
+.sidelist {
+	display: flex;
+	flex-direction: row;
+	position: absolute;
+	right: 0px;
+	list-style: none; 
+	vertical-align: middle;
+	margin: 0px;
+	padding: 0px 40px 0px 0px;
+}
+
+.sidelist li {
+	margin-left: 10px;
+}
+
+#sidelist_container {
+	padding-top: 5px;
+}
+
+/* body part */
+body {
+	/*background: #FEFDF0;*/
+}
+
 .body {
+	display: flex;
+	flex-direction: column;
+	width: 65%;
+	margin: 0 auto;
+}
+
+.profile_body {
 	display:flex;
+	flex-direction: row;
 	width:100%;
-	height:600px;
 }
 
 .profile_map {
-	width:100%;
-	height:100%;
-	border-color:#6C6024;
-	border-width:3px;
-	border-style:solid;
-	margin-right: 20px;
+	width:50%;
+	margin-right: 10px;
 }
 
 .profile {
 	height:40%;
-	border-color:#ADA142;
-	border-width:3px;
-	border-style:solid;	
-	margin: 5px 5px 20px 5px;
+	margin: 5px 5px 10px 0px;
+	display: flex;
+}
+
+.picture_file {
+	width:100%;
+}
+
+.information, .information td {
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+
+.information td {
+	padding: 10px;
+}
+
+.column_name {
+	white-space:nowrap;
+}
+
+.map_mark {
+	height:55%;
+	margin: 0px 5px 20px 0px;
+	display: flex;	
+}
+
+.map_container {
+	width: 100%;
+	height: 300px;
+}
+
+.mark {
+	width: 100%;
 }
 
 #map {
+	height:100%;
+	width:100%;
+}
+
+.chatroom {
 	width: 50%;
-	height:50%;
-	border-color:#ADA142;
-	border-width:3px;
-	border-style:solid;	
-	margin: 5px 5px 20px 5px;
+	padding-bottom: 4px;
+	border: 1px solid rgba(0,0,0,.125);
 }
 
 .chats {
-  padding: 10px 5px;
-  height: 80%;
-  width: 500px;
-  background: #eee;
+  height: 90%;
+  width: 100%;
+  background-color: rgba(0,0,0,.1);
   overflow-y: scroll;
 }
 
 .chats .chat {
   display: flex;
-  margin: 5px 0;
+  margin: 5px;
 }
 
 .chats .chat .group {
   display: inherit;
   word-wrap: normal;
+  max-width: 80%;
+}
+
+.name_content {
+	display: flex;
+	flex-direction: column;
+	margin-left: 5px;
+}
+
+.user_picture_container {
+	margin:10px auto;
+}
+
+.user_picture_file {
+	border-radius:50%;
+	border: 1px solid;
+	width: 30px;
 }
 
 .chats .chat .group .name {
-  padding: 0 10px;
   font-weight: bold;
+  font-size: 10px;
+}
+
+.chats .chat .group .content{
+	max-width: 100%;
+	word-wrap:break-word;
+	word-break:break-all;
+	overflow: hidden;
+	border: 1px solid white;
+	background-color: white;
+	padding: 3px;
+	border-radius: 10px;
+}
+
+.chat_picture_file {
+	width: 75%;
 }
 
 .chats .chat .time {
-  padding-left: 10px;
+  padding-left: 5px;
   font-size: 10px;
   line-height: 18px;
   color: #aaa;
+  position:absolute;
+  bottom: 0px;
+}
+
+.time_container {
+	width: 65px;
+	position: relative;
+}
+
+.message_container {
+	height: 10%;
+	padding: 20px 5px;
 }
 
 .message {
-  margin-top: 10px;
+	height: 32px;
+	display: flex;
+	flex-direction: row;
 }
 
-.message input {
-  padding: 0 5px;
-  height: 25px;
-  width: 300px;
+#socket_picture {
+	display: none;
 }
 
-.message input:first-child {
-  width: 80px;
-}
-
-.message button {
-  height: 32px;
-  width: 80px;
+#content {
+	width: 80%;
+	border-radius:4px;
+	border:2px solid #787878;
+	margin-right: 5px;
 }

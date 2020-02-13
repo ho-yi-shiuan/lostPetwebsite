@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel=stylesheet type="text/css" href="./index.css">
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+</head>
+<body>
+<span style="font-family:Microsoft JhengHei;">
+	<header>
+	<div class = "mainheader">
+		<a href="/index.html"><div id = "logo"><img src="/images/pet_logo.png" height=100%></div></a>
+		<div id="sidelist_container">
+			<ul class="sidelist">
+				<li><a href="/index.html" style="text-decoration: none; color: black;">走失總覽</a></li>
+				<li>｜</li>
+				<li><a href="/index.html" style="text-decoration: none; color: black;">拾獲總覽</a></li>
+				<li>｜</li>
+				<li><a href="/new_lost.html" style="text-decoration: none; color: black;">我要刊登</a></li>
+				<li>｜</li>
+				<li><a href="/profile.html" style="text-decoration: none; color: black;">會員頁面</a></li>
+			</ul>
+		</div>
+	</div>
+	</header>
+	<div class="userprofile">
+		<div class="head">會員資料</div>
+		<hr id="divider">
+		<div class="user_line">
+			<div class="nameline">姓名: <div id="successname"></div></div></br>
+			<div class="emailline">信箱: <div id="successemail"></div></div></br>
+		</div>
+		請輸入住家, 公司等常出現位置, 若有寵物在附近走失可得知訊息: </br>
+		<input type="text" id="input_address"></input>
+		<button id="select_current_spot">存取目前位置</button><button id="submit_mark">送出</button>
+		<input type="hidden" name="lost_address_lng"></input>
+		<input type="hidden" name="lost_address_lat"></input>
+		<div id="profile_map" style="color: black;"></div>		
+		<div id="signout" onclick="signout()"><a href="signin.html" style="text-decoration: none; color: white;">登出</a></div>
+	</div>
+	<div class="message">
+		<div class="head">訊息</div>
+		<hr id="divider">
+		<div class="message_container">
+			<div class="message_time"><div class="message_time_title">時間: </div></div>
+			<div class="message_content"><div class="message_content_title">訊息內容: </div></div>
+		</div>
+	</div>
+	<div class="user_lost_data">
+		<div class="head">協尋中寵物</div>
+	</div>
+	<div class="user_past_lost_data">
+		<div class="head">協尋記錄</div>
+	</div>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/locale/zh-tw.js'></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&libraries=places"></script>
+<script>	
+	var user_id;
+	function getCookie(name)
+	{
+		var arr = document.cookie.match(new RegExp("(^| )"+name+"=([^;]*)(;|$)"));
+		if(arr != null){
+			return unescape(arr[2]);
+			
+		}return null;
+	}
+	function signout(){
+		var exp = new Date();
+		exp.setTime(exp.getTime() - 1);
+		var user_cookie = getCookie("user");
+		if(user_cookie!=null){
+			document.cookie = "user="+user_cookie+";expires="+exp.toGMTString();
+		}
+	}
+	var cookiesend = {};
+	function getcookie()
+	{
+		var cookies = document.cookie.split(";");
+		console.log(cookies);
+		for(i=0;i<cookies.length;i++)
+		{
+			var c = cookies[i].trim();//去空白
+			if(c.indexOf("user=") >= 0)//回傳找到的第一個
+			{
+				//找到user cookie, 直接拿token去登入, 回傳會員資料
+				cookiesend.cookie = c.substring(5,c.length);
+				console.log("前端cookie找到的token為: "+cookiesend.cookie);
+				return("2");
+			}
+		}
+	}
+
+	var cookieresult = getcookie();
+	if(cookieresult == "2")
+	{
+		$.ajax({
+			contentType :"application/json",
+			type: "POST",
+			url: "/profile",
+			data: JSON.stringify(cookiesend),
+			success: function(res)
+			{
+				if(res.status == "expired"){
+					document.location.href = "/signin.html";
+				}else if(res.status == "wrong"){
+					document.location.href = "/signin.html";
+				}else{
+					document.getElementById("successname").innerHTML = res.data.name;
+					document.getElementById("successemail").innerHTML = res.data.email;
+					console.log(res);
+					user_id = res.data.id;
+					append_lost(res.data.lost_pet);
+					append_message(res.data.message);
+					for(i=0; i<res.data.mark.length; i++){
+						geocoder.geocode( { 'address': res.data.mark[i] }, function(results, status) {
+							if (status == 'OK') {
+								map.panTo(results[0].geometry.location);
+								var marker = new google.maps.Marker({
+									map: map,
+									position: results[0].geometry.location,
+									icon: '/images/placeholder.png'
+								});
+								var infowindow = new google.maps.InfoWindow({
+									content: "新增之標記"
+								});
+								marker.addListener('click', function() {
+									infowindow.open(map, marker);
+								});
+							} else {
+								console.log("新增User標記: "+status);
+							}
+						});					
+					}
+				}
+			},
+			error: function(err)
+			{
+				console.log(err);
+			},
+			dataType: "json"
+			});
+	}
+	else{
+		document.location.href="/signin.html";
+	}
+	//google map code start
+	console.log("開始執行map script");
+	var map;
+	function initMap() {
+		console.log("執行init map");
+		geocoder = new google.maps.Geocoder();
+		map = new google.maps.Map(document.getElementById('profile_map'), {
+			zoom: 15,
+			center: {
+              lat: 25.0374865,
+              lng: 121.5647688
+            }
+		});
+	}
+	var autocomplete;
+	window.addEventListener('load', () => {
+		initMap();
+		var input = document.getElementById('input_address');
+		autocomplete = new google.maps.places.Autocomplete(input);
+		google.maps.event.addListener(autocomplete, 'place_changed', function() {
+			fillInAddress();
+		});		
+	});
+	// 地址的輸入框，值有變動時執行
+	function fillInAddress(){
+		var place = autocomplete.getPlace();
+		console.log(place.geometry.location.lng());
+		console.log(place.formatted_address);
+		document.getElementsByName("lost_address_lng")[0].value = place.geometry.location.lng();
+		document.getElementsByName("lost_address_lat")[0].value = place.geometry.location.lat();
+	};
+	//存取目前位置code start
+	document.getElementById("select_current_spot").addEventListener('click', function(){
+		get_spot();
+	});
+	function get_spot(){
+		navigator.geolocation.getCurrentPosition(function(position) {
+			document.getElementsByName("lost_address_lng")[0].value = position.coords.longitude;
+			document.getElementsByName("lost_address_lat")[0].value = position.coords.latitude;	
+			document.getElementById("input_address").value = "已存取目前位置";
+		});
+	}
+	//存取目前位置code end
+	document.getElementById("submit_mark").addEventListener('click', function(){
+		insert_mark();
+	});
+	function insert_mark(){
+		var user_mark = {
+			user_id: user_id,
+			insert_lng: document.getElementsByName("lost_address_lng")[0].value,
+			insert_lat: document.getElementsByName("lost_address_lat")[0].value
+		}
+		$.ajax({
+			contentType :"application/json",
+			type: "POST",
+			url: "/user_mark",
+			data: JSON.stringify(user_mark),
+			success: function(res)
+				{
+					document.getElementById("input_address").value = "";
+					console.log(res);
+					var location = res.location_lat+", "+res.location_lng;
+					geocoder.geocode( { 'address': location}, function(results, status) {
+						if (status == 'OK') {
+							map.panTo(results[0].geometry.location);
+							var marker = new google.maps.Marker({
+								map: map,
+								position: results[0].geometry.location,//new google.maps.LatLng(22.991965, 120.202518),
+								icon: '/images/pin.png'
+							});
+							var infowindow = new google.maps.InfoWindow({
+								content: "新增之標記"
+							});
+							marker.addListener('click', function() {
+								infowindow.open(map, marker);
+							});
+						} else {
+							console.log("新增User標記: "+status);
+						}
+					});
+				},
+			dataType: "json"
+		});
+	};
+	//googlt map code end	
+
+	function append_lost(res){
+		console.log(res);
+		for(i=0; i<res.length; i++){
+			var divider = document.createElement("hr");
+			divider.id = "divider";
+			var profile_pet = document.createElement("div");
+			profile_pet.className = "profile_pet";
+			var profile_pet_picture = document.createElement("div");
+			profile_pet_picture.id = "profile_pet_picture";
+			var profile_pet_picture_file = document.createElement("img");
+			profile_pet_picture_file.id = "profile_pet_picture_file";
+			profile_pet_picture_file.src=res[i].picture;
+			var profile_pet_picture_link = document.createElement("a");
+			profile_pet_picture_link.href = "/room?id="+res[i].id;
+			profile_pet_picture_link.appendChild(profile_pet_picture_file);
+			profile_pet_picture.appendChild(profile_pet_picture_link);
+			profile_pet.appendChild(profile_pet_picture);
+			var profile_pet_data = document.createElement("div");
+			profile_pet_data.className = "profile_pet_data";
+			
+			var profile_pet_name = document.createElement("div");
+			profile_pet_name.className = "profile_pet_name";
+			var element_name = document.createTextNode("姓名: "+res[i].name);
+			profile_pet_name.appendChild(element_name);
+			profile_pet_data.appendChild(profile_pet_name);
+			
+			var profile_pet_gender = document.createElement("div");
+			profile_pet_gender.className = "profile_pet_gender";
+			var element_gender = document.createTextNode("性別: "+res[i].gender);
+			profile_pet_gender.appendChild(element_gender);
+			profile_pet_data.appendChild(profile_pet_gender);
+			
+			var profile_pet_age = document.createElement("div");
+			profile_pet_age.className = "profile_pet_age";
+			var element_age = document.createTextNode("年齡: "+res[i].age);
+			profile_pet_age.appendChild(element_age);
+			profile_pet_data.appendChild(profile_pet_age);
+
+			var profile_pet_breed = document.createElement("div");
+			profile_pet_breed.className = "profile_pet_breed";
+			var element_breed = document.createTextNode("品種: "+res[i].breed);
+			profile_pet_breed.appendChild(element_breed);
+			profile_pet_data.appendChild(profile_pet_breed);
+			
+			var profile_pet_color = document.createElement("div");
+			profile_pet_color.className = "profile_pet_color";
+			var element_color = document.createTextNode("顏色: "+res[i].color);
+			profile_pet_color.appendChild(element_color);
+			profile_pet_data.appendChild(profile_pet_color);
+			
+			var profile_pet_location = document.createElement("div");
+			profile_pet_location.className = "profile_pet_location";
+			var element_location = document.createTextNode("走失地點: "+res[i].lost_location);
+			profile_pet_location.appendChild(element_location);
+			profile_pet_data.appendChild(profile_pet_location);
+			
+			var profile_pet_time = document.createElement("div");
+			profile_pet_time.className = "profile_pet_time";
+			var element_time = document.createTextNode("走失時間: "+res[i].lost_time);
+			profile_pet_time.appendChild(element_time);
+			profile_pet_data.appendChild(profile_pet_time);
+			
+			var profile_pet_other = document.createElement("div");
+			profile_pet_other.className = "profile_pet_other";
+			var element_other = document.createTextNode("其他資訊: "+res[i].other);
+			profile_pet_other.appendChild(element_other);
+			profile_pet_data.appendChild(profile_pet_other);
+			var close_case = document.createElement("div");
+			close_case.className = "close_case";
+			var delete_message = document.createElement("div");
+			var message_content_start = document.createTextNode("關閉協尋");
+			delete_message.appendChild(message_content_start);
+			delete_message.appendChild(document.createElement("br"));
+			var message_content_end = document.createTextNode("傳送訊息通知頁面中用戶: ");
+			delete_message.appendChild(message_content_end);
+			delete_message.style="text-align: center";
+			close_case.appendChild(delete_message);
+			var close_status = document.createElement("div");
+			close_status.className = "close_status";
+			var close_socket = document.createElement("textarea");
+			close_socket.className = "close_message"+res[i].id;
+			close_socket.placeholder = "ex: 寵物已找到, 非常感謝大家的幫忙!!";
+			close_socket.rows = "5";
+			close_socket.cols = "25";
+			close_case.appendChild(close_socket);
+			close_case.appendChild(document.createElement("br"));
+			close_case.appendChild(document.createTextNode("請問寵物最後是否有找到? "));
+			close_case.appendChild(document.createElement("br"));
+			var radio_form = document.createElement("form");
+			radio_form.id = "radio_form"+res[i].id;
+			var found = document.createElement("input");
+			found.type = "radio";
+			var found_text = document.createTextNode("已找到");
+			found.name = "pet_found";
+			found.value = "end_found";
+			var unfound = document.createElement("input");
+			unfound.type = "radio";
+			var unfound_text = document.createTextNode("未找到");
+			unfound.name = "pet_found";
+			unfound.value = "end_unfound";
+			radio_form.appendChild(found);
+			radio_form.appendChild(found_text);
+			radio_form.appendChild(unfound);
+			radio_form.appendChild(unfound_text);
+			close_case.appendChild(radio_form);
+			var send_button = document.createElement("button");
+			send_button.id = "send_close";
+			send_button.setAttribute("onclick", "message_to_room("+res[i].id+")");
+			var button_value = document.createTextNode("送出");
+			send_button.appendChild(button_value);
+			send_button.style = "height: 30px; width: 60px; margin: 0 auto;";
+			close_case.appendChild(send_button);
+			
+			profile_pet.appendChild(profile_pet_data);
+			if(res[i].lost_status == "end_found"){
+				var status_found_text = document.createTextNode("是否協尋成功: 是");
+				var status_found = document.createElement("div");
+				status_found.appendChild(status_found_text);
+				profile_pet_data.appendChild(status_found);
+				document.getElementsByClassName("user_past_lost_data")[0].appendChild(divider);
+				document.getElementsByClassName("user_past_lost_data")[0].appendChild(profile_pet);						
+			}else if(res[i].lost_status == "end_unfound"){
+				var status_unfound_text = document.createTextNode("是否協尋成功: 否");
+				var status_unfound = document.createElement("div");
+				status_unfound.appendChild(status_unfound_text);
+				profile_pet_data.appendChild(status_unfound);
+				document.getElementsByClassName("user_past_lost_data")[0].appendChild(divider);
+				document.getElementsByClassName("user_past_lost_data")[0].appendChild(profile_pet);					
+			}else{
+				profile_pet.appendChild(close_case);
+				document.getElementsByClassName("user_lost_data")[0].appendChild(divider);
+				document.getElementsByClassName("user_lost_data")[0].appendChild(profile_pet);			
+			}
+		}
+	}
+	function append_message(message){
+		for(j=0; j<message.length; j++){
+			var send_time = document.createElement("div");
+			send_time.id = "send_time";
+			var message_time = document.createTextNode(moment(message[j].send_time).format('YYYY-MM-DD'));
+			send_time.appendChild(message_time);
+			document.getElementsByClassName("message_time")[0].appendChild(send_time);
+			var content = document.createElement("div");
+			content.id = "send_content";
+			content.style = "text-align: center";
+			var message_content = document.createTextNode(message[j].content);
+			content.appendChild(message_content);
+			if(message[j].link_id){
+				var content_link = document.createElement("a");
+				content_link.href = "/room?id="+message[j].link_id;
+				content_link.style = "text-decoration: none; color: white; text-align: center";
+				content_link.appendChild(content);
+				document.getElementsByClassName("message_content")[0].appendChild(content_link);			
+			}else{
+				document.getElementsByClassName("message_content")[0].appendChild(content);
+			}
+		}
+	}
+	function message_to_room(room_id){
+		console.log(room_id);
+		var user_info = {
+			user_name: document.getElementById("successname").innerHTML,
+			room_id: room_id
+		}
+		var socket = io.connect();
+		socket.on('connect', function (){
+			socket.emit('join', user_info);
+		});
+		let data = {
+			name: document.getElementById("successname").innerHTML,
+			content: document.getElementsByClassName("close_message"+room_id)[0].value,
+		};
+		console.log(data);
+		socket.emit('message_to_backend', data);
+		var status = {
+			close_id: room_id
+		};
+		var form = document.getElementById("radio_form"+room_id);
+		for(var i=0; i<form.pet_found.length;i++){
+			if(form.pet_found[i].checked){
+				status.close_status = form.pet_found[i].value;
+				console.log("form radio status = "+form.pet_found[i].value);
+			}
+		}
+		
+		//包裝要 ajax 的東西
+		$.ajax({
+			contentType :"application/json",
+			type: "POST",
+			url: "/close_case",
+			data: JSON.stringify(status),
+			success: function(res)
+				{
+					console.log(res);
+					document.location.href = "/profile.html";
+				},
+			dataType: "json"
+		});
+	}
+</script>
+</span>
+</body>
+</html>
