@@ -23,6 +23,19 @@ var upload = multer({
 })
 
 app.post('/', upload.single('image'), async function(req, res){
+	//以空格跟逗號拆解
+	if(req.body.pet_color.length > 0){
+		var color_array = req.body.pet_color.split(/[ ,]+/);
+		console.log(color_array);
+		//去掉顏色中的色, 才能做LIKE
+		for(i=0; i<color_array.length; i++){
+			if(color_array[i].indexOf("色") >= 0){
+				var new_element = color_array[i].substring(0, color_array[i].length-1);
+				color_array[i] = new_element;
+			}
+		}
+	console.log(color_array);
+	}
 	console.log(req.body);
 	//待辦:
 	//是否要做transaction?
@@ -36,7 +49,7 @@ app.post('/', upload.single('image'), async function(req, res){
 			gender: req.body.pet_gender,
 			age: req.body.pet_age,
 			breed: req.body.pet_breed,
-			color: req.body.pet_color,
+			color: color_array,
 			lost_location: req.body.input_address,
 			lost_location_lng: req.body.lost_address_lng,
 			lost_location_lat: req.body.lost_address_lat,
@@ -139,40 +152,93 @@ app.post('/', upload.single('image'), async function(req, res){
 		}		
 	}else if(req.body.post_type == "find"){
 		//文字比對
-		var compare_query = "SELECT * from lost_pet WHERE post_type (in)";
-		var compare_array = [['lost']];
-		var condition_array = [];
-		if(req.body.category.length > 0){
-			let category_query = "category (in)";
-			compare_array = [category_query,[req.body.category]];
-			condition_array.push(compare_array);
+		var condition_array = ['lost'];
+		var query_array = [];
+		if(req.body.category){
+			let category_query = " category in (?)";
+			query_array.push(category_query);
+			condition_array.push(req.body.category);
 		}
-		if(req.body.pet_gender.length > 0){
-			let gender_query = "gender (in)";
-			gender_array = [gender_query,[req.body.pet_gender]];
-			condition_array.push(gender_array);
+		if(req.body.pet_gender){
+			let gender_query = " gender in (?)";
+			query_array.push(gender_query);
+			condition_array.push(req.body.pet_gender);
 		}
-		if(req.body.pet_breed.length > 0){
-			let pet_breed_query = "breed (in)";
-			pet_breed_array = [pet_breed_query,[req.body.pet_breed]];
-			condition_array.push(pet_breed_array);
+		if(req.body.pet_breed){
+			let pet_breed_query = " breed in (?)";
+			query_array.push(pet_breed_query);
+			condition_array.push(req.body.pet_breed);
 		
 		}
 		console.log(condition_array);
 		//顏色
-		//以空格跟逗號拆解
-		if(req.body.pet_color.length > 0){
-			var color_array = req.body.pet_color.split(/[ ,]+/);
-			console.log(color_array);
-			//去掉顏色中的色, 才能做LIKE
-			for(i=0; i<color_array.length; i++){
-				
+		//組成LIKE
+		var color_query = " (";			
+		for(i=0; i<color_array.length; i++){
+				color_query += "color LIKE '%"+color_array[i]+"%'";
+				if(i <color_array.length-1){
+					color_query += " OR ";
+				}
 			}
-			//組成LIKE
+		color_query += ")";
+		query_array.push(color_query);
+		console.log(query_array);
+		//地址篩經緯度
+		if(req.body.lost_address_lng){
+			query_array.push(" lost_location_lng BETWEEN "+req.body.lost_address_lng+"-0.05 AND "+req.body.lost_address_lng+"+0.05 AND lost_location_lat BETWEEN "+req.body.lost_address_lat+"-0.05 AND "+req.body.lost_address_lat+"+0.05");
 		}
-		
-		//位置
-		
+		var compare_query = "SELECT * from lost_pet WHERE post_type in (?)";
+		if(query_array.length >0){
+			compare_query += " AND";
+			for(i=0; i<query_array.length; i++){
+				compare_query += query_array[i];
+				if(i < query_array.length-1){
+					compare_query += " AND";
+				}
+			}
+		}
+		console.log(compare_query);
+		const compare_promise = new Promise((resolve, reject) => {
+			mysql.con.query(compare_query, condition_array, function(err, result){
+					if(err){
+						console.log("lost_record api(post): \n");
+						console.log(err);
+					}else{
+						resolve(result);
+					}
+			});
+		})
+		let compare_result = await compare_promise;
+		let compared_user_array = [];
+		for(j=0; j<compare_result.length; j++){
+			//篩掉重複的user_id
+			//insert message
+			compared_user_array.push(compare_result[j].user_id);
+		}
+		console.log("compared user: "+compared_user_array);
+		var result = compared_user_array.filter(function(element, index, arr){
+			return arr.indexOf(element)=== index;
+		});
+		console.log(result);
+		for(k=0; k<result.length; k++){
+			if(result[k] != req.body.user_id){
+				var insert_message = {
+					send_id: 0,
+					send_time: Date.now(),
+					receive_id: result[k],
+					content: "出現疑似您的走失寵物, 請點訊息前往",
+					link_id: insert_lost_pet.insertId
+				}
+				mysql.con.query("INSERT INTO message set?", insert_message, function(err, result){
+					if(err){
+						console.log("lost_record api(mark): \n");
+						console.log(err);
+					}else{
+						console.log("找出符合通報條件的走失寵物成功");
+					}
+				});					
+			}
+		}		
 	}
 });
 

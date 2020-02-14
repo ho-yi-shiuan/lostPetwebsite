@@ -369,7 +369,7 @@
 		}
 	}
 	function append_message(message){
-		for(j=0; j<message.length; j++){
+		for(j=message.length-1; j>=0; j--){
 			var send_time = document.createElement("div");
 			send_time.id = "send_time";
 			var message_time = document.createTextNode(moment(message[j].send_time).format('YYYY-MM-DD'));
