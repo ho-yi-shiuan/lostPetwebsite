@@ -75,8 +75,10 @@
 	</form>
 	</div>
 	<div class="index_body">
-		<div class="lost_pets">
-		</div>
+		<div>協尋中寵物</div>
+		<div class="pets" id="lost_pets"></div>
+		<div>已拾獲的疑似走失寵物</div>
+		<div class="pets" id="find_pets"></div>
 	</div>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&libraries=places"></script>
 <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
@@ -123,7 +125,7 @@
 			if(pets.data.length == 0){
 				//顯示目前沒有協尋中寵物
 			}else{
-				console.log("123");
+				console.log(pets);
 				append_data(pets.data);
 			}
 		}
@@ -137,7 +139,7 @@
 			data: $('#select_form').serialize(),
 			success: function(res){
 				console.log(res);
-				document.getElementsByClassName("lost_pets")[0].innerHTML = "";
+				document.getElementById("lost_pets").innerHTML = "";
 				append_data(res.data);
 			},
 			error: function(err){
@@ -147,7 +149,7 @@
 		});	
 	}
 	function append_data(data){
-		for(i=0; i<data.length; i++){
+		for(i=data.length-1; i>=0; i--){
 			var container_background = document.createElement("div");
 			container_background.className = "container";
 			var container = document.createElement("div");
@@ -161,10 +163,14 @@
 			image_div.className = "image_container";
 			image_div.appendChild(image);
 			image_container.appendChild(image_div);
+			container.appendChild(image_container);
 			var name = document.createElement("div");
-			name.className = "name";
-			var pet_name = document.createTextNode(data[i].name);
-			name.appendChild(pet_name);
+			if(data[i].post_type == "lost"){				
+				name.className = "name";
+				var pet_name = document.createTextNode(data[i].name);
+				name.appendChild(pet_name);
+				container.appendChild(name);
+			}
 			var location = document.createElement("div");
 			location.className = "location";
 			var pet_location = document.createTextNode(data[i].lost_location);
@@ -173,12 +179,14 @@
 			time.className = "time";
 			var pet_time = document.createTextNode(data[i].lost_time);
 			time.appendChild(pet_time);
-			container.appendChild(image_container);
-			container.appendChild(name);
 			container.appendChild(location);
 			container.appendChild(time);
 			container_background.appendChild(container);
-			document.getElementsByClassName("lost_pets")[0].appendChild(container_background);				
+			if(data[i].post_type == "lost"){
+				document.getElementById("lost_pets").appendChild(container_background);
+			}else if(data[i].post_type == "find"){
+				document.getElementById("find_pets").appendChild(container_background);				
+			}
 		}
 	}
 </script>

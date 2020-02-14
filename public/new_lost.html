@@ -32,27 +32,27 @@
 		<div class="form_container">
 			<form action="/lost_record" method="POST" enctype="multipart/form-data">
 				<div>
-					<input type="radio" name="post_type" value="lost" style="margin-left: 15%;"> 寵物走失, 需要協尋</br>
-					<input type="radio" name="post_type" value="find" style="margin-left: 15%;"> 發現疑似走失寵物</br></br>
+					<input type="radio" name="post_type" id="lost_check" value="lost" style="margin-left: 15%;"> 寵物走失, 需要協尋</br>
+					<input type="radio" name="post_type" id="find_check" value="find" style="margin-left: 15%;"> 發現疑似走失寵物</br></br>
 				</div>
-				<div>請選擇走失寵物類別:
+				<div>請選擇拾獲/走失寵物類別:
 					<input type="radio" name="category" value="dog"> 狗
 					<input type="radio" name="category" value="cat"> 貓</br> 
 				</div>
-				<input type="text" name="pet_name" value = "test_name" placeholder="請輸入寵物姓名"></input></br>
+				<input type="text" name="pet_name" id="input_name" placeholder="請輸入寵物姓名 (拾獲走失寵物不需填寫)"></input></br>
 				寵物照片: <input type="file" name="image"></input></br>
 				<div>請選擇寵物性別:
 					<input type="radio" name="pet_gender" value="male"> 男
-					<input type="radio" name="pet_gender" value="female"> 女</br>
+					<input type="radio" name="pet_gender" value="female"> 女
 				</div>
 				<input type="text" name="pet_age" value = "3歲" placeholder="請輸入年齡"></input></br>
 				<input type="text" name="pet_breed" value = "test_breed" placeholder="請輸入品種"></input></br>
-				<input type="text" name="pet_color" value = "#CA7A2C" placeholder="請輸入寵物顏色(色碼)"></input></br>
+				<input type="text" name="pet_color" value = "黑, 白" placeholder="請輸入寵物顏色"></input></br>
 				<input type="hidden" name="lost_address_lng"></input>
 				<input type="hidden" name="lost_address_lat"></input>
 				<input type="text" name="input_address"></input></br>
 				<div id="map" style="color: black;"></div>
-				走失時間: <input type="datetime-local" name="lost_time"></br>
+				走失/發現時間: <input type="datetime-local" name="lost_time"></br>
 				<input type="text" name="other" value = "other message" placeholder="其他相關資訊"></input></br>
 				<input type="hidden" name="user_id"></input>
 				<input id="submit" type="submit" value="送出">

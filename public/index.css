@@ -98,10 +98,9 @@ input {
 	width: 75%;
 }
 
-.lost_pets {
+.pets {
 	display: flex;
 	flex-wrap: wrap;
-	margin: 0 11%;
 	width: 100%;
 }
 

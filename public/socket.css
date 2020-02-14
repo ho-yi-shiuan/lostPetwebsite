@@ -132,6 +132,7 @@ body {
 
 .chatroom {
 	width: 50%;
+	height: 750px;
 	padding-bottom: 4px;
 	border: 1px solid rgba(0,0,0,.125);
 }

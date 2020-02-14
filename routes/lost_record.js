@@ -137,6 +137,42 @@ app.post('/', upload.single('image'), async function(req, res){
 				});					
 			}
 		}		
+	}else if(req.body.post_type == "find"){
+		//文字比對
+		var compare_query = "SELECT * from lost_pet WHERE post_type (in)";
+		var compare_array = [['lost']];
+		var condition_array = [];
+		if(req.body.category.length > 0){
+			let category_query = "category (in)";
+			compare_array = [category_query,[req.body.category]];
+			condition_array.push(compare_array);
+		}
+		if(req.body.pet_gender.length > 0){
+			let gender_query = "gender (in)";
+			gender_array = [gender_query,[req.body.pet_gender]];
+			condition_array.push(gender_array);
+		}
+		if(req.body.pet_breed.length > 0){
+			let pet_breed_query = "breed (in)";
+			pet_breed_array = [pet_breed_query,[req.body.pet_breed]];
+			condition_array.push(pet_breed_array);
+		
+		}
+		console.log(condition_array);
+		//顏色
+		//以空格跟逗號拆解
+		if(req.body.pet_color.length > 0){
+			var color_array = req.body.pet_color.split(/[ ,]+/);
+			console.log(color_array);
+			//去掉顏色中的色, 才能做LIKE
+			for(i=0; i<color_array.length; i++){
+				
+			}
+			//組成LIKE
+		}
+		
+		//位置
+		
 	}
 });
 
@@ -144,72 +180,78 @@ app.get('/', async function(req, res){
 	console.log(req.query);
 	//篩選類別, 品種, 性別
 	var select_array = [];
+	var query_array = [];
+	var condition_array = [];
 	if(typeof(req.query.post_type) == "object"){
 		let post_type_query = " post_type in (?)";
-		let post_type_array = [post_type_query,req.query.post_type];
-		select_array.push(post_type_array);
+		condition_array.push(req.query.post_type);
+		select_array.push(post_type_query);
 	}else if(typeof(req.query.post_type) == "string"){
 		let post_type_query = " post_type in (?)";
-		let post_type_array = [post_type_query,[req.query.post_type]];
-		select_array.push(post_type_array);
+		condition_array.push([req.query.post_type]);
+		select_array.push(post_type_query);
 	}
 	if(typeof(req.query.select_category) == "object"){
 		let category_query = " category in (?)";
-		let category_array = [category_query,req.query.select_category];
-		select_array.push(category_array);
+		condition_array.push(req.query.select_category);
+		select_array.push(category_query);
 	}else if(typeof(req.query.select_category) == "string"){
 		let category_query = " category in (?)";
-		let category_array = [category_query,[req.query.select_category]];
-		select_array.push(category_array);
+		condition_array.push([req.query.select_category]);
+		select_array.push(category_query);
 	}
 	if(typeof(req.query.select_breed) == "object"){
 		let breed_query = " breed in (?)";
-		let breed_array = [breed_query,req.query.select_breed];
-		select_array.push(breed_array);
+		condition_array.push(req.query.select_breed);
+		select_array.push(breed_query);
 	}else if(typeof(req.query.select_breed) == "string"){
 		let breed_query = " breed in (?)";
-		let breed_array = [breed_query,[req.query.select_breed]];
-		select_array.push(breed_array);
+		condition_array.push([req.query.select_breed]);
+		select_array.push(breed_query);
 	}
 	if(typeof(req.query.select_gender) == "object"){
 		let gender_query = " gender in (?)";
-		let gender_array = [gender_query,req.query.select_gender];
-		select_array.push(gender_array);
+		condition_array.push(req.query.select_gender);
+		select_array.push(gender_query);
 	}else if(typeof(req.query.select_gender) == "string"){
 		let gender_query = " gender in (?)";
-		let gender_array = [gender_query,[req.query.select_gender]];
-		select_array.push(gender_array);
+		condition_array.push([req.query.select_gender]);
+		select_array.push(gender_query);
 	}
+	//地址篩經緯度
+	if(req.query.lost_address_lng){
+		select_array.push(" lost_location_lng BETWEEN "+req.query.lost_address_lng+"-0.05 AND "+req.query.lost_address_lng+"+0.05 AND lost_location_lat BETWEEN "+req.query.lost_address_lat+"-0.05 AND "+req.query.lost_address_lat+"+0.05");
+	}
+	//顏色where color like '%黑%' OR '%白%'
+	if(typeof(req.query.select_color) == "object"){
+		var color_query = "";
+		color_query += " (";
+		var color_query;
+		for(j=0; j<req.query.select_color.length; j++){
+			color_query += "color LIKE '%"+req.query.select_color[j]+"%'";
+			if(j <req.query.select_color.length-1){
+				color_query += " OR ";
+			}
+		}
+		color_query += ")";
+		select_array.push(color_query);
+		console.log(color_query);
+	}else if(typeof(req.query.select_color) == "string"){
+		select_array.push(" color LIKE '%"+req.query.select_color+"%'");
+	}	
+	
 	var select_query = "SELECT * from lost_pet ";
-	var condition_array = [];
 	if(select_array.length >0){
 		select_query += "where";
 		for(i=0; i<select_array.length; i++){
-			condition_array.push(select_array[i][1]);
-			select_query += select_array[i][0];
+			select_query += select_array[i];
 			if(i < select_array.length-1){
 				select_query += " AND";
 			}
 		}
 	}
-	//地址篩經緯度
-	if(req.query.lost_address_lng){
-		select_query += " AND lost_location_lng BETWEEN "+req.query.lost_address_lng+"-0.05 AND "+req.query.lost_address_lng+"+0.05 AND lost_location_lat BETWEEN "+req.query.lost_address_lat+"-0.05 AND "+req.query.lost_address_lat+"+0.05 ";
-	}
-	//顏色where color like '%黑%' OR '%白%'
-	if(typeof(req.query.select_color) == "object"){
-		select_query += " AND (";	
-		for(j=0; j<req.query.select_color.length; j++){
-			select_query += "color LIKE '%"+req.query.select_color[j]+"%'";
-			if(j <req.query.select_color.length-1){
-				select_query += " OR ";
-			}
-		}
-		select_query += ")";
-	}else if(typeof(req.query.select_color) == "string"){
-		select_query += " AND color LIKE '%"+req.query.select_color+"%'";
-	}	
-	console.log(select_query);	
+	console.log(select_query);
+	console.log(condition_array);
 	const lost_record_promise = new Promise((resolve, reject) => {
 	mysql.con.query(select_query, condition_array, function(err, result){
 			if(err){
@@ -235,7 +277,8 @@ app.get('/', async function(req, res){
 			lost_location: lost_record[i].lost_location,
 			lost_time: lost_record[i].lost_time,
 			other: lost_record[i].other,
-			lost_status: lost_record[i].lost_status
+			lost_status: lost_record[i].lost_status,
+			post_type: lost_record[i].post_type
 		}
 		lost_record_array.push(lost_data_object);
 	};
@@ -244,7 +287,5 @@ app.get('/', async function(req, res){
 	}
 	res.json(data);
 });
-	
-module.exports = app;
 	
 module.exports = app;
