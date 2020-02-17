@@ -408,6 +408,8 @@
 		if(detail.post_type == "lost"){
 			if(detail.lost_status == "end_unfound" || detail.lost_status == "end_found"){
 				document.getElementsByClassName("message")[0].style="display: none;";
+				document.getElementsByClassName("message_container")[0].appendChild(document.createTextNode("感謝您參與尋找, 協尋已關閉, 目前無法留言"));
+				document.getElementsByClassName("add_mark")[0].style="display: none";			
 			}		
 		}
 		if(detail.post_type == "find"){

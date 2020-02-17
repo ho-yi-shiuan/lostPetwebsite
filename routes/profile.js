@@ -39,8 +39,11 @@ app.post("/", async function(req, res){
 		});
 	})
 	let info = await token_promise;
-	if()
-	var search_lost_record = "SELECT * from lost_pet where user_id = "+info[0].id+" AND post_type = \""+req.body.list_type+"\" AND lost_status in (?)";
+	if(req.body.list_type){
+		var search_lost_record = "SELECT * from lost_pet where user_id = "+info[0].id+" AND post_type = \""+req.body.list_type+"\" AND lost_status in (?)";
+	}else{
+		var search_lost_record = "SELECT * from lost_pet where user_id = "+info[0].id+";";
+	}
 	console.log(req.body);
 	console.log(search_lost_record);
 	const search_lost_record_promise = new Promise((resolve, reject) => {
