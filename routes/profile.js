@@ -44,10 +44,10 @@ app.post("/", async function(req, res){
 	}else{
 		var search_lost_record = "SELECT * from lost_pet where user_id = "+info[0].id+";";
 	}
-	console.log(req.body);
+	console.log(req.body.lost_status);
 	console.log(search_lost_record);
 	const search_lost_record_promise = new Promise((resolve, reject) => {
-		mysql.con.query(search_lost_record, req.body.lost_status, function(err, result){
+		mysql.con.query(search_lost_record, [req.body.lost_status], function(err, result){
 			if(err){
 				console.log(err);
 			}else{

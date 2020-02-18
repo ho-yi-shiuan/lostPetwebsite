@@ -49,7 +49,7 @@ app.post('/', upload.single('image'), async function(req, res){
 			gender: req.body.pet_gender,
 			age: req.body.pet_age,
 			breed: req.body.pet_breed,
-			color: color_array,
+			color: JSON.stringify(color_array),
 			lost_location: req.body.input_address,
 			lost_location_lng: req.body.lost_address_lng,
 			lost_location_lat: req.body.lost_address_lat,
@@ -149,26 +149,24 @@ app.post('/', upload.single('image'), async function(req, res){
 					}
 				});					
 			}
-		}		
-	}else if(req.body.post_type == "find"){
+		}
 		//文字比對
-		var condition_array = ['lost'];
+		var condition_array = [['find']];
 		var query_array = [];
 		if(req.body.category){
 			let category_query = " category in (?)";
 			query_array.push(category_query);
-			condition_array.push(req.body.category);
+			condition_array.push([req.body.category]);
 		}
 		if(req.body.pet_gender){
 			let gender_query = " gender in (?)";
 			query_array.push(gender_query);
-			condition_array.push(req.body.pet_gender);
+			condition_array.push([req.body.pet_gender]);
 		}
 		if(req.body.pet_breed){
 			let pet_breed_query = " breed in (?)";
 			query_array.push(pet_breed_query);
-			condition_array.push(req.body.pet_breed);
-		
+			condition_array.push([req.body.pet_breed]);
 		}
 		console.log(condition_array);
 		//顏色
@@ -198,6 +196,86 @@ app.post('/', upload.single('image'), async function(req, res){
 			}
 		}
 		console.log(compare_query);
+		console.log();
+		const compare_promise = new Promise((resolve, reject) => {
+			mysql.con.query(compare_query, condition_array, function(err, result){
+					if(err){
+						console.log("lost_record api(post): \n");
+						console.log("新增走失後比對目前已刊登的發現案例");
+						console.log(err);
+					}else{
+						resolve(result);
+					}
+			});
+		})
+		let compare_result = await compare_promise;
+		for(k=0; k<compare_result.length; k++){
+			if(compare_result[k].user_id != req.body.user_id){
+				var insert_message = {
+					send_id: 0,
+					send_time: Date.now(),
+					receive_id: req.body.user_id,
+					content: "出現疑似您的走失寵物, 請點訊息前往",
+					link_id: compare_result[k].pet_id
+				}
+				mysql.con.query("INSERT INTO message set?", insert_message, function(err, result){
+					if(err){
+						console.log("lost_record api(mark): \n");
+						console.log(err);
+					}else{
+						console.log("找出符合通報條件的走失寵物成功");
+					}
+				});					
+			}
+		}		
+	}else if(req.body.post_type == "find"){
+		//文字比對
+		var condition_array = [['lost']];
+		var query_array = [];
+		if(req.body.category){
+			let category_query = " category in (?)";
+			query_array.push(category_query);
+			condition_array.push([req.body.category]);
+		}
+		if(req.body.pet_gender){
+			let gender_query = " gender in (?)";
+			query_array.push(gender_query);
+			condition_array.push([req.body.pet_gender]);
+		}
+		if(req.body.pet_breed){
+			let pet_breed_query = " breed in (?)";
+			query_array.push(pet_breed_query);
+			condition_array.push([req.body.pet_breed]);
+		}
+		console.log(condition_array);
+		//顏色
+		//組成LIKE
+		var color_query = " (";			
+		for(i=0; i<color_array.length; i++){
+				color_query += "color LIKE '%"+color_array[i]+"%'";
+				if(i <color_array.length-1){
+					color_query += " OR ";
+				}
+			}
+		color_query += ")";
+		query_array.push(color_query);
+		console.log(query_array);
+		//地址篩經緯度
+		if(req.body.lost_address_lng){
+			query_array.push(" lost_location_lng BETWEEN "+req.body.lost_address_lng+"-0.05 AND "+req.body.lost_address_lng+"+0.05 AND lost_location_lat BETWEEN "+req.body.lost_address_lat+"-0.05 AND "+req.body.lost_address_lat+"+0.05");
+		}
+		var compare_query = "SELECT * from lost_pet WHERE post_type in (?)";
+		if(query_array.length >0){
+			compare_query += " AND";
+			for(i=0; i<query_array.length; i++){
+				compare_query += query_array[i];
+				if(i < query_array.length-1){
+					compare_query += " AND";
+				}
+			}
+		}
+		console.log(compare_query);
+		console.log();
 		const compare_promise = new Promise((resolve, reject) => {
 			mysql.con.query(compare_query, condition_array, function(err, result){
 					if(err){

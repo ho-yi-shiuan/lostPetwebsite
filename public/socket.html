@@ -68,17 +68,6 @@
 <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&libraries=places"></script>
 <script>
-	//google map code start
-	console.log("開始執行map script");
-	var map;
-	function initMap() {
-		console.log("執行init map");
-		geocoder = new google.maps.Geocoder();
-		map = new google.maps.Map(document.getElementById('map'), {
-			zoom: 15
-		});
-	}
-	//googlt map code end
 	//找出使用者資料code start
 	var user_name;
 	var user_picture;
@@ -330,10 +319,12 @@
 		gender.className = "column_name";
 		gender.appendChild(document.createTextNode("性別"));
 		var gender_value = document.createElement("td");
-		if(detail.name == null){
+		if(detail.gender == null){
 			gender_value.appendChild(document.createTextNode("未知"));		
-		}else{
-			gender_value.appendChild(document.createTextNode(detail.gender));		
+		}else if(detail.gender == "female"){
+			gender_value.appendChild(document.createTextNode("女"));		
+		}else if(detail.gender == "male"){
+			gender_value.appendChild(document.createTextNode("男"));
 		}
 		var gender_tr = document.createElement("tr");
 		gender_tr.appendChild(gender);
@@ -343,7 +334,7 @@
 		age.className = "column_name";
 		age.appendChild(document.createTextNode("年齡"));
 		var age_value = document.createElement("td");
-		if(detail.name == null){
+		if(detail.age == null){
 			age_value.appendChild(document.createTextNode("未知"));		
 		}else{
 			age_value.appendChild(document.createTextNode(detail.age));	
@@ -356,7 +347,7 @@
 		breed.className = "column_name";
 		breed.appendChild(document.createTextNode("品種"));
 		var breed_value = document.createElement("td");
-		if(detail.name == null){
+		if(detail.breed == null){
 			breed_value.appendChild(document.createTextNode("未知"));		
 		}else{
 			breed_value.appendChild(document.createTextNode(detail.breed));
@@ -369,10 +360,10 @@
 		color.className = "column_name";
 		color.appendChild(document.createTextNode("顏色"));
 		var color_value = document.createElement("td");
-		if(detail.name == null){
+		if(detail.color == null){
 			color_value.appendChild(document.createTextNode("未知"));		
 		}else{
-			color_value.appendChild(document.createTextNode(detail.color));
+			color_value.appendChild(document.createTextNode(JSON.parse(detail.color)));
 		}
 		var color_tr = document.createElement("tr");
 		color_tr.appendChild(color);
@@ -478,6 +469,18 @@
 		var input = document.getElementById('insert_mark');
 		autocomplete = new google.maps.places.Autocomplete(input);
 	});
+	//google map code start
+	console.log("開始執行map script");
+	var map;
+	var geocoder;
+	function initMap() {
+		console.log("執行init map");
+		geocoder = new google.maps.Geocoder();
+		map = new google.maps.Map(document.getElementById('map'), {
+			zoom: 15
+		});
+	}
+	//googlt map code end
 	document.getElementById("submit_mark").addEventListener('click', function(){
 		insert_mark();
 	});

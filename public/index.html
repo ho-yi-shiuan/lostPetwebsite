@@ -113,7 +113,7 @@
 	//ajax 送出表單 code start*/
 	window.addEventListener('load', () => {
 		const xhr = new XMLHttpRequest();
-		var url = "/lost_record";
+		var url = "/lost_record?lost_status=finding";
 		xhr.open("get", url);
 		xhr.onload = function(){
 			var pets = JSON.parse(this.response);
