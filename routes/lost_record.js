@@ -66,7 +66,7 @@ app.post('/', upload.single('image'), async function(req, res){
 			gender: req.body.pet_gender,
 			age: req.body.pet_age,
 			breed: req.body.pet_breed,
-			color: req.body.pet_color,
+			color: JSON.stringify(color_array),
 			lost_location: req.body.input_address,
 			lost_location_lng: req.body.lost_address_lng,
 			lost_location_lat: req.body.lost_address_lat,

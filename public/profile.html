@@ -10,7 +10,7 @@
 <body>
 <span style="font-family:Microsoft JhengHei;">
 	<header>
-	<div class = "mainheader">
+	<div class = "mainheader_index">
 		<a href="/index.html"><div id = "logo"><img src="/images/pet_logo.png" height=100%></div></a>
 		<div id="sidelist_container">
 			<ul class="sidelist">
@@ -35,6 +35,7 @@
 		請輸入住家, 公司等常出現位置, 若有寵物在附近走失可得知訊息: </br>
 		<input type="text" id="input_address"></input>
 		<button id="select_current_spot">存取目前位置</button><button id="submit_mark">送出</button>
+		<div id="error_message" style="color: white; display: none;">此輸入為無效地址!!!</div>
 		<input type="hidden" name="lost_address_lng"></input>
 		<input type="hidden" name="lost_address_lat"></input>
 		<div id="profile_map" style="color: black;"></div>		
@@ -47,15 +48,16 @@
 			<div class="message_time"><div class="message_time_title">時間: </div></div>
 			<div class="message_content"><div class="message_content_title">訊息內容: </div></div>
 		</div>
+		<div class="hide_display_container"></div>
 	</div>
 	<div class="user_lost_data">
 		<div id="profile_list_container">
 			<ul class="profile_list">
-				<li><div id="profile_list_lost" onclick="get_lost()">協尋中寵物</div></li>
+				<li style="cursor: pointer;"><div id="profile_list_lost" onclick="get_lost()">協尋中寵物</div></li>
 				<li>｜</li>
-				<li><div id="profile_list_lost_record" onclick="get_past_lost()">過去協尋記錄</div></li>
+				<li style="cursor: pointer;"><div id="profile_list_lost_record" onclick="get_past_lost()">過去協尋記錄</div></li>
 				<li>｜</li>
-				<li><div id="profile_list_find" onclick="get_find()">發現走失寵物記錄</div></li>
+				<li style="cursor: pointer;"><div id="profile_list_find" onclick="get_find()">發現走失寵物記錄</div></li>
 			</ul>
 		</div>
 		<div class="user_lost_list"></div>
@@ -141,6 +143,7 @@
 	};
 	//存取目前位置code start
 	document.getElementById("select_current_spot").addEventListener('click', function(){
+		document.getElementById("error_message").style = "display: none";
 		get_spot();
 	});
 	function get_spot(){
@@ -152,7 +155,13 @@
 	}
 	//存取目前位置code end
 	document.getElementById("submit_mark").addEventListener('click', function(){
-		insert_mark();
+		if(document.getElementsByName("lost_address_lng")[0].value.length == 0){
+			//輸入地址且地址錯誤
+			document.getElementById("error_message").style = "color: white; display: block";
+		}else{
+			insert_mark();
+			document.getElementById("error_message").style = "display: none";
+		}
 	});
 	function insert_mark(){
 		var user_mark = {
@@ -177,7 +186,7 @@
 							var marker = new google.maps.Marker({
 								map: map,
 								position: results[0].geometry.location,//new google.maps.LatLng(22.991965, 120.202518),
-								icon: '/images/pin.png'
+								icon: '/images/placeholder.png'
 							});
 							var infowindow = new google.maps.InfoWindow({
 								content: "新增之標記"
@@ -248,6 +257,7 @@
 					append_lost(res.data.lost_pet);
 					document.getElementsByClassName("message_content")[0].innerHTML = "";
 					document.getElementsByClassName("message_time")[0].innerHTML = "";
+					document.getElementsByClassName("hide_display_container")[0].innerHTML = "";
 					append_message(res.data.message);					
 					for(i=0; i<res.data.mark.length; i++){
 						geocoder.geocode( { 'address': res.data.mark[i] }, function(results, status) {
@@ -283,7 +293,8 @@
 		if(res.length > 0){
 			for(i=0; i<res.length; i++){
 				var divider = document.createElement("hr");
-				divider.id = "divider";
+				divider.id = "lost_divider";
+				divider.style="width: 90%; margin: 20px auto;";
 				var profile_pet = document.createElement("div");
 				profile_pet.className = "profile_pet";
 				var profile_pet_picture = document.createElement("div");
@@ -344,7 +355,7 @@
 				if(res[i].age == null){
 					var element_color = document.createTextNode("顏色: 未知");
 				}else{
-					var element_color = document.createTextNode("顏色: "+res[i].color);
+					var element_color = document.createTextNode("顏色: "+JSON.parse(res[i].color));
 				}
 				profile_pet_color.appendChild(element_color);
 				profile_pet_data.appendChild(profile_pet_color);
@@ -383,18 +394,13 @@
 				var message_content_end = document.createTextNode("傳送訊息通知頁面中用戶: ");
 				delete_message.appendChild(message_content_end);
 				delete_message.style="text-align: center";
-				close_case.appendChild(delete_message);
 				var close_status = document.createElement("div");
 				close_status.className = "close_status";
 				var close_socket = document.createElement("textarea");
 				close_socket.className = "close_message"+res[i].id;
 				close_socket.placeholder = "ex: 寵物已找到, 非常感謝大家的幫忙!!";
 				close_socket.rows = "5";
-				close_socket.cols = "25";
-				close_case.appendChild(close_socket);
-				close_case.appendChild(document.createElement("br"));
-				close_case.appendChild(document.createTextNode("請問寵物最後是否有找到? "));
-				close_case.appendChild(document.createElement("br"));
+				close_socket.cols = "23";
 				var radio_form = document.createElement("form");
 				radio_form.id = "radio_form"+res[i].id;
 				var found = document.createElement("input");
@@ -411,32 +417,35 @@
 				radio_form.appendChild(found_text);
 				radio_form.appendChild(unfound);
 				radio_form.appendChild(unfound_text);
-				close_case.appendChild(radio_form);
 				var send_button = document.createElement("button");
 				send_button.id = "send_close";
 				send_button.setAttribute("onclick", "message_to_room("+res[i].id+")");
 				var button_value = document.createTextNode("送出");
 				send_button.appendChild(button_value);
 				send_button.style = "height: 30px; width: 60px; margin: 0 auto;";
-				close_case.appendChild(send_button);
 				
 				profile_pet.appendChild(profile_pet_data);
 				if(res[i].post_type == "lost" && res[i].lost_status == "end_found"){
-					var status_found_text = document.createTextNode("是否協尋成功: 是");
-					var status_found = document.createElement("div");
-					status_found.appendChild(status_found_text);
-					profile_pet_data.appendChild(status_found);
+					close_case.appendChild(document.createTextNode("協尋已關閉, 是否協尋成功: 是"));
+					close_case.style = "line-height: 250px;";
+					profile_pet.appendChild(close_case);
 					document.getElementsByClassName("user_lost_list")[0].appendChild(divider);
 					document.getElementsByClassName("user_lost_list")[0].appendChild(profile_pet);						
 				}else if(res[i].post_type == "lost" && res[i].lost_status == "end_unfound"){
-					var status_unfound_text = document.createTextNode("是否協尋成功: 否");
-					var status_unfound = document.createElement("div");
-					status_unfound.appendChild(status_unfound_text);
-					profile_pet_data.appendChild(status_unfound);
+					close_case.appendChild(document.createTextNode("協尋已關閉, 是否協尋成功: 否"));
+					close_case.style = "line-height: 250px;";
+					profile_pet.appendChild(close_case);
 					document.getElementsByClassName("user_lost_list")[0].appendChild(divider);
 					document.getElementsByClassName("user_lost_list")[0].appendChild(profile_pet);					
 				}else if(res[i].post_type == "lost" && res[i].lost_status == "finding"){
 					console.log("append lost");
+					close_case.appendChild(delete_message);
+					close_case.appendChild(close_socket);
+					close_case.appendChild(document.createElement("br"));
+					close_case.appendChild(document.createTextNode("請問寵物最後是否有找到? "));
+					close_case.appendChild(document.createElement("br"));
+					close_case.appendChild(radio_form);
+					close_case.appendChild(send_button);
 					profile_pet.appendChild(close_case);
 					document.getElementsByClassName("user_lost_list")[0].appendChild(divider);
 					document.getElementsByClassName("user_lost_list")[0].appendChild(profile_pet);			
@@ -458,26 +467,93 @@
 		}
 	}
 	function append_message(message){
-		for(j=message.length-1; j>=0; j--){
-			var send_time = document.createElement("div");
-			send_time.id = "send_time";
-			var message_time = document.createTextNode(moment(message[j].send_time).format('YYYY-MM-DD'));
-			send_time.appendChild(message_time);
-			document.getElementsByClassName("message_time")[0].appendChild(send_time);
-			var content = document.createElement("div");
-			content.id = "send_content";
-			content.style = "text-align: center";
-			var message_content = document.createTextNode(message[j].content);
-			content.appendChild(message_content);
-			if(message[j].link_id){
-				var content_link = document.createElement("a");
-				content_link.href = "/room?id="+message[j].link_id;
-				content_link.style = "text-decoration: none; color: white; text-align: center";
-				content_link.appendChild(content);
-				document.getElementsByClassName("message_content")[0].appendChild(content_link);			
-			}else{
-				document.getElementsByClassName("message_content")[0].appendChild(content);
+		if(message.length <= 3){
+			//直接append
+			for(j=message.length-1; j>=0; j--){
+				var send_time = document.createElement("div");
+				send_time.className = "send_time";
+				var message_time = document.createTextNode(moment(message[j].send_time).format('YYYY-MM-DD'));
+				send_time.appendChild(message_time);
+				document.getElementsByClassName("message_time")[0].appendChild(send_time);
+				var content = document.createElement("div");
+				content.className = "send_content";
+				content.style = "text-align: center";
+				var message_content = document.createTextNode(message[j].content);
+				content.appendChild(message_content);
+				if(message[j].link_id){
+					var content_link = document.createElement("a");
+					content_link.className = "message_link";
+					content_link.href = "/room?id="+message[j].link_id;
+					content_link.style = "text-decoration: none; color: white; text-align: center";
+					content_link.appendChild(content);
+					document.getElementsByClassName("message_content")[0].appendChild(content_link);			
+				}else{
+					document.getElementsByClassName("message_content")[0].appendChild(content);
+				}
 			}
+		}else{
+			//先append 3筆
+			for(j=message.length-1; j>=message.length-3; j--){
+				var send_time = document.createElement("div");
+				send_time.className = "send_time";
+				var message_time = document.createTextNode(moment(message[j].send_time).format('YYYY-MM-DD'));
+				send_time.appendChild(message_time);
+				document.getElementsByClassName("message_time")[0].appendChild(send_time);
+				var content = document.createElement("div");
+				content.className = "send_content";
+				content.style = "text-align: center";
+				var message_content = document.createTextNode(message[j].content);
+				content.appendChild(message_content);
+				if(message[j].link_id){
+					var content_link = document.createElement("a");
+					content_link.className = "message_link";
+					content_link.href = "/room?id="+message[j].link_id;
+					content_link.style = "text-decoration: none; color: white; text-align: center";
+					content_link.appendChild(content);
+					document.getElementsByClassName("message_content")[0].appendChild(content_link);			
+				}else{
+					document.getElementsByClassName("message_content")[0].appendChild(content);
+				}				
+			}
+			//剩下display none
+			for(j=message.length-4; j>=0; j--){
+				var send_time = document.createElement("div");
+				send_time.className = "send_time";
+				var message_time = document.createTextNode(moment(message[j].send_time).format('YYYY-MM-DD'));
+				send_time.appendChild(message_time);
+				send_time.style = "display: none;";
+				document.getElementsByClassName("message_time")[0].appendChild(send_time);
+				var content = document.createElement("div");
+				content.className = "send_content";
+				content.style = "text-align: center;";
+				var message_content = document.createTextNode(message[j].content);
+				content.appendChild(message_content);
+				if(message[j].link_id){
+					var content_link = document.createElement("a");
+					content_link.className = "message_link";
+					content_link.href = "/room?id="+message[j].link_id;
+					content_link.style = "text-decoration: none; color: white; text-align: center; display: none;";
+					content_link.appendChild(content);
+					document.getElementsByClassName("message_content")[0].appendChild(content_link);			
+				}else{
+					content.style = "display: none;";
+					document.getElementsByClassName("message_content")[0].appendChild(content);
+				}					
+			}
+			//加一個div, 按下去會把剩下的顯示出來
+			var display_message = document.createElement("div");
+			display_message.id = "display_message";
+			display_message.appendChild(document.createTextNode("查看更多"));
+			display_message.style="text-align: center; margin-bottom: 5px; cursor: pointer;";
+			document.getElementsByClassName("hide_display_container")[0].appendChild(display_message);
+			display_message.addEventListener('click', function(){
+				document.getElementById("display_message").style = "display: none;";
+				for(i=0; i<message.length; i++){
+					document.getElementsByClassName("send_time")[i].style = "display: block;";				
+					document.getElementsByClassName("send_content")[i].style = "text-align: center;";
+					document.getElementsByClassName("message_link")[i].style = "text-decoration: none; color: white; text-align: center;";
+				}
+			});	
 		}
 	}
 	function message_to_room(room_id){

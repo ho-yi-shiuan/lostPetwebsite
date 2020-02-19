@@ -20,14 +20,17 @@ input {
 	padding: 5px;
 }
 
+body{
+	font-size: 16px;
+}
+
 /*頂端bar*/
 
 .mainheader_index {
 	display: flex;
 	width: 100%;
-	margin: 0px 0px 10px 0px;
-	height: 30px;
-	padding-top: 10px;	
+	height: 60px;
+	background-color: rgba(255,255,255,0.7);
 }
 
 .mainheader{
@@ -41,8 +44,9 @@ input {
 #logo{
 	width: 200px;
 	margin-left: 40px;
+	margin-top: 15px;
 	z-index: 1;
-	height: 100%;
+	height: 50%;
 }
 
 .headlist{
@@ -78,24 +82,78 @@ input {
 }
 
 #sidelist_container {
-	padding-top: 5px;
+	margin-top: 20px;
 }
 
 /* 首頁 */
 
+.body {
+	background-color: white;
+}
+
+#bar_text {
+	position:absolute;
+	z-index: 2;
+	color: white;
+	font-size: 30px;
+	margin: 10% 0 0 10%;
+	display:inline;
+}
+
+#bar_row_button {
+	display: inline;
+	background-color: rgba(0,0,0,.5);
+	border: 1px solid rgba(0,0,0,.125);
+	border-radius: 10px;
+	padding: 1px 5px;
+	margin-left: 10px;
+	color: white;
+	cursor: pointer;
+}
+
+#bar_row_button:hover{
+	color: black;
+	background-color: rgba(255,255,255,0.5);
+	border: 1px solid rgba(255,255,255,0.7);	
+}
+
 #select_form {
+	z-index: 2;
 	display: flex;
 	flex-direction: row;
 	justify-content: center;
+	background-color: white;
+	width: 100%;
+	padding: 10px 0;
+	margin: 0 auto;
 }
 
 .form_div {
 	margin-right: 20px;
 }
 
+/* 多選框 */
+.select_category input[type="checkbox"] {
+    display: none;
+}
+
+.select_category input[type="checkbox"] + label {
+    display: inline-block;
+    background-color: #ccc;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.select_category input[type="checkbox"]:checked + label {
+    background-color: rgba(0,0,0,.6);
+    color: white;
+}
+
 .index_body {
 	margin: 0 auto;
 	width: 75%;
+	z-index: 3;
+	background-color: white;
 }
 
 .pets {
@@ -153,6 +211,11 @@ input {
 	height: 40px;
 	width: 60%;
 	margin-bottom: 20px;
+}
+
+#input_address{
+	border-radius:4px;
+	border: 1px solid #c3c3c3;
 }
 
 #submit{
@@ -250,7 +313,7 @@ input {
 .profile_pet {
 	display: flex;
 	flex-direction: row;
-	flex-wrap: wrap;
+
 	margin: 10px;
 }
 
@@ -316,12 +379,12 @@ input {
 	margin-bottom: 10px;
 }
 
-#send_time {
+.send_time {
 	text-align: center;
 	margin-top: 5px;
 }
 
-#send_content {
+.send_content {
 	margin-top: 5px;
 }
 
@@ -379,6 +442,13 @@ input {
 
 .search_background {
 	width: 100%;
-	height: 100px;
-	border: 1px solid;
+	height: 565px;
+	overflow: hidden;
+}
+
+#search_image {
+	position:absolute;
+	z-index:-1;
+	width: 100%;
+	margin-top: -130px;
 }

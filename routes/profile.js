@@ -97,7 +97,7 @@ app.post("/", async function(req, res){
 			gender: lost_record[i].gender,
 			age: lost_record[i].age,
 			breed: lost_record[i].breed,
-			color: lost_record[i].color,
+			color: [lost_record[i].color],
 			lost_location: lost_record[i].lost_location,
 			lost_time: lost_record[i].lost_time,
 			other: lost_record[i].other,
