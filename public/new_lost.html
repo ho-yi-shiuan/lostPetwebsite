@@ -4,22 +4,166 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
-<script text="text/javascript" src="https://js.tappaysdk.com/tpdirect/v2_2_1"></script>
+<link rel=stylesheet type="text/css" href="./index.css">
 <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
 <title></title>
 </head>
 <body>
-<form action="/lost_record" method="POST" enctype="multipart/form-data">
-寵物姓名:<input type="text" name="pet_name" value = "test_name"></input></br>
-寵物照片:<input type="file" name="image"></input></br>
-性別:<input type="text" name="pet_gender" value = "female"></input></br>
-年齡:<input type="number" name="pet_age" value = "3"></input></br>
-品種:<input type="text" name="pet_breed" value = "test_breed"></input></br>
-顏色(色碼):<input type="text" name="pet_color" value = "#CA7A2C"></input></br>
-遺失地點:<input type="text" name="lost_address" value = "台北市信義區基隆路一段178號"></input></br>
-遺失時間: <input type="datetime-local" name="lost_time"></br>
-其他:<input type="text" name="other" value = "other message"></input></br>
-<input type="submit" value="送出">
-</form>
+<span style="font-family:Microsoft JhengHei;">
+	<header>
+	<div class = "mainheader_index">
+		<a href="/index.html"><div id = "logo"><img src="/images/pet_logo.png" height=100%></div></a>
+		<div id="sidelist_container">
+			<ul class="sidelist">
+				<li><a href="/index.html" style="text-decoration: none; color: black;">刊登總覽</a></li>
+				<li>｜</li>
+				<li><a href="/success_case.html" style="text-decoration: none; color: black;">成功案例</a></li>
+				<li>｜</li>
+				<li><a href="/new_lost.html" style="text-decoration: none; color: black;">我要刊登</a></li>
+				<li>｜</li>
+				<li><a href="/profile.html" style="text-decoration: none; color: black;">會員頁面</a></li>
+			</ul>
+		</div>
+	</div>
+	</header>
+	<div class="form_background">
+		<div class="head">登錄走失資料</div>
+		<hr id="divider">
+		<div class="form_container">
+			<form action="/lost_record" method="POST" enctype="multipart/form-data">
+				<div>
+					<input type="radio" name="post_type" id="lost_check" value="lost" style="margin-left: 15%;"> 寵物走失, 需要協尋</br>
+					<input type="radio" name="post_type" id="find_check" value="find" style="margin-left: 15%;"> 發現疑似走失寵物</br></br>
+				</div>
+				<div>請選擇拾獲/走失寵物類別:
+					<input type="radio" name="category" value="dog"> 狗
+					<input type="radio" name="category" value="cat"> 貓</br> 
+				</div>
+				<input type="text" name="pet_name" id="input_name" placeholder="請輸入寵物姓名 (拾獲走失寵物不需填寫)"></input></br>
+				寵物照片: <input type="file" name="image"></input></br>
+				<div>請選擇寵物性別:
+					<input type="radio" name="pet_gender" value="male"> 男
+					<input type="radio" name="pet_gender" value="female"> 女
+				</div>
+				<input type="text" name="pet_age" value = "3歲" placeholder="請輸入年齡"></input></br>
+				<input type="text" name="pet_breed" value = "test_breed" placeholder="請輸入品種"></input></br>
+				<input type="text" name="pet_color" value = "黑, 白" placeholder="請輸入寵物顏色"></input></br>
+				<input type="hidden" name="lost_address_lng"></input>
+				<input type="hidden" name="lost_address_lat"></input>
+				<input type="text" name="input_address"></input></br>
+				<div id="map" style="color: black;"></div>
+				走失/發現時間: <input type="datetime-local" name="lost_time"></br>
+				<input type="text" name="other" value = "other message" placeholder="其他相關資訊"></input></br>
+				<input type="text" name="title" value = "標題" placeholder="請輸入刊登文章標題"></input></br>
+				<textarea name="content" value = "刊登內文" placeholder="請輸入刊登文章內文"></textarea></br>
+				<input type="hidden" name="user_id"></input>
+				<input id="submit" type="submit" value="送出">
+			</form>
+		</div>
+	</div>
+</span>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&libraries=places"></script>
+<script>
+	//google map code start
+	console.log("開始執行map script");
+	var map;
+	function initMap() {
+		console.log("執行init map");
+		geocoder = new google.maps.Geocoder();
+		map = new google.maps.Map(document.getElementById('map'), {
+			zoom: 15,
+			center: {
+              lat: 25.0374865,
+              lng: 121.5647688
+            }
+		});
+	}
+	var autocomplete;
+	window.addEventListener('load', () => {
+		initMap();
+		var input = document.getElementsByName('input_address')[0];
+		autocomplete = new google.maps.places.Autocomplete(input);
+		google.maps.event.addListener(autocomplete, 'place_changed', function() {
+			fillInAddress();
+		});		
+	});
+	// 地址的輸入框，值有變動時執行
+	function fillInAddress(){
+		var place = autocomplete.getPlace();
+		console.log(place.geometry.location.lng());
+		console.log(place.formatted_address);
+		document.getElementsByName("lost_address_lng")[0].value = place.geometry.location.lng();
+		document.getElementsByName("lost_address_lat")[0].value = place.geometry.location.lat();
+		if(place.geometry){
+			let search_center = place.geometry.location;
+			map.panTo(search_center);
+			// 在搜尋結果的地點上放置標記
+			let marker = new google.maps.Marker({
+				position: search_center,
+				map: map
+			});
+			// info window
+			let infowindow = new google.maps.InfoWindow({
+				content: place.formatted_address
+			});
+			marker.addListener('click', function() {
+				infowindow.open(map, marker);
+			});
+		}
+	};
+	//googlt map code end
+	//找出使用者資料code start
+	var user_name;
+	var user_picture;
+	var cookiesend = {};
+	function getcookie()
+	{
+		var cookies = document.cookie.split(";");
+		console.log(cookies);
+		for(i=0;i<cookies.length;i++)
+		{
+			var c = cookies[i].trim();//去空白
+			if(c.indexOf("user=") >= 0)//回傳找到的第一個
+			{
+				//找到user cookie, 直接拿token去登入, 回傳會員資料
+				cookiesend.cookie = c.substring(5,c.length);
+				return("2");
+			}
+		}
+	}
+
+	var cookieresult = getcookie();
+	if(cookieresult == "2")
+	{
+		$.ajax({
+			contentType :"application/json",
+			type: "POST",
+			url: "/profile",
+			data: JSON.stringify(cookiesend),
+			success: function(res)
+			{
+				if(res.status == "expired"){
+					alert('Token 已過期, 請重新登入');
+					document.location.href = "/signin.html";
+				}else if(res.status == "wrong"){
+					alert('無登入紀錄, 請登入');
+					document.location.href = "/signin.html";
+				}else{
+					console.log(res);
+					document.getElementsByName("user_id")[0].value = res.data.id;
+				}
+			},
+			error: function(err)
+			{
+				console.log(err);
+			},
+			dataType: "json"
+			});
+	}
+	else{
+		document.location.href="/signin.html";
+	}
+	//找出使用者資料code end
+</script>
 </body>
 </html>
