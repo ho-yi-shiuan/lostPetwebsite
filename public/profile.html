@@ -32,13 +32,15 @@
 			<div class="nameline">姓名: <div id="successname"></div></div></br>
 			<div class="emailline">信箱: <div id="successemail"></div></div></br>
 		</div>
-		請輸入住家, 公司等常出現位置, 若有寵物在附近走失可得知訊息: </br>
-		<input type="text" id="input_address"></input>
-		<button id="select_current_spot">存取目前位置</button><button id="submit_mark">送出</button>
-		<div id="error_message" style="color: white; display: none;">此輸入為無效地址!!!</div>
-		<input type="hidden" name="lost_address_lng"></input>
-		<input type="hidden" name="lost_address_lat"></input>
-		<div id="profile_map" style="color: black;"></div>		
+		<div>請輸入住家, 公司等常出現位置, 若有寵物在附近走失可得知訊息:</div>
+		<div style="margin-top: 10px;">
+			<input type="text" id="input_address"></input>
+			<input type="button" id="select_current_spot" value="存取目前位置"></input><input type="button" id="submit_mark" value="送出"></input>
+			<div id="error_message" style="color: white; display: none;">此輸入為無效地址!!!</div>
+			<input type="hidden" name="lost_address_lng"></input>
+			<input type="hidden" name="lost_address_lat"></input>
+		</div>
+		<div id="profile_map" style="color: black; margin-top: 10px;"></div>		
 		<div id="signout" onclick="signout()"><a href="signin.html" style="text-decoration: none; color: white;">登出</a></div>
 	</div>
 	<div class="message">
@@ -60,7 +62,27 @@
 				<li style="cursor: pointer;"><div id="profile_list_find" onclick="get_find()">發現走失寵物記錄</div></li>
 			</ul>
 		</div>
-		<div class="user_lost_list"></div>
+			<hr id="lost_divider" style="width: 90%; margin: 20px auto;">
+			<div class="profile_container">
+				<div class="profile_image_container">
+					<img id="profile_image" src="https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/158226630428084960779_1825830644227979_7082599928089804800_o.jpg">
+				</div>
+				<div class="profile_lost_content">
+					<div class="close">關閉協尋</div>
+					<div class="profile_content_li" id="profile_content_name">姓名: 米腸</div>
+					<div class="profile_content_li">性別: 女</div>
+					<div class="profile_content_li">年齡: 3歲</div>
+					<div class="profile_content_li">品種: 米克斯</div>
+					<div class="profile_content_li">顏色: 白</div>
+					<div class="profile_content_li">時間: 2020-02-19T12:02</div>
+					<div class="profile_content_li">地點: 台灣台南市中西區忠義路二段浪浪別哭</div>
+					<div class="profile_content_li">標題: 寵物走失協尋</div>
+					<div class="profile_content_li" id="profile_content_text"><p id="text">內文: 範例一共準備了三個不同顏色的 DIV 區塊，他們都用上了 CSS3 transition 來修改尺寸，各位讀者可以看到，這三個 DIV 區塊除了在範例一共準備了三個不同顏色的 DIV 區塊，他們都用上</p></div>
+				</div>
+			</div>
+		<div class="user_lost_list">
+
+		</div>
 	</div>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.js'></script>
@@ -380,11 +402,6 @@
 				profile_pet_time.appendChild(element_time);
 				profile_pet_data.appendChild(profile_pet_time);
 				
-				var profile_pet_other = document.createElement("div");
-				profile_pet_other.className = "profile_pet_other";
-				var element_other = document.createTextNode("其他資訊: "+res[i].other);
-				profile_pet_other.appendChild(element_other);
-				profile_pet_data.appendChild(profile_pet_other);
 				var close_case = document.createElement("div");
 				close_case.className = "close_case";
 				var delete_message = document.createElement("div");

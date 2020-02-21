@@ -48,7 +48,6 @@ app.get('/', async function(req, res){
 		color: lost_detail[0].color,
 		lost_location: lost_detail[0].lost_location,
 		lost_time: lost_detail[0].lost_time,
-		other: lost_detail[0].other,
 		post_type: lost_detail[0].post_type,
 		lost_status: lost_detail[0].lost_status,
 		markers: markers

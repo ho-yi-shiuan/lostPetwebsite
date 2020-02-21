@@ -100,7 +100,6 @@ app.post("/", async function(req, res){
 			color: [lost_record[i].color],
 			lost_location: lost_record[i].lost_location,
 			lost_time: lost_record[i].lost_time,
-			other: lost_record[i].other,
 			lost_status: lost_record[i].lost_status,
 			post_type: lost_record[i].post_type
 		})

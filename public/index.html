@@ -95,7 +95,10 @@
 		<input type="text" id="input_address" name="input_address" placeholder="依地點搜尋"></input></br>
 		<div id="error_message" style="color: red; display: none;">此輸入為無效地址!!!</div>
 	</div>
-	<input type="file" id="image" name="image"></input>
+	<label class="form_div choose_file">
+		<input type="file" id="image" name="image"></input>
+		<span id="upload_cover_image" style="Opacity: 0.7;"><img src="/images/photo.png"><div id="chose_picture">以照片搜尋</div></span>
+	</label>
 	<input id="submit" type="button" value="搜尋" style="width: 60px; height: 34px;">
 	</form>
 	<div class="body">
@@ -428,7 +431,7 @@
 	//ajax 送出表單 code start*/
 	window.addEventListener('load', () => {
 		const xhr = new XMLHttpRequest();
-		var url = "/lost_record";
+		var url = "/lost_record?lost_status=finding";
 		xhr.open("get", url);
 		xhr.onload = function(){
 			var pets = JSON.parse(this.response);
@@ -441,6 +444,21 @@
 		}
 		xhr.send();
 	});
+	$("#image").on("change",function (e) {
+		console.log("已選檔案");
+		var e = e || window.event;
+		//獲取 檔案 個數 取消的時候使用
+		var files = e.target.files;
+		console.log(files[0].name);
+		if(files.length>0){
+			// 獲取檔名 並顯示檔名
+			var fileName = files[0].name;
+			document.getElementById("chose_picture").innerHTML = fileName;
+		}else{
+			//清空檔名
+			document.getElementById("chose_picture").innerHTML = "以照片搜尋";
+		}
+	});	
 	function ajax_search(){
 		var form = $('form')[0];
 		var formData = new FormData(form);
@@ -453,6 +471,8 @@
 			url: "/search",
 			data: formData,
 			success: function(res){
+				document.getElementById("image").outerHTML = document.getElementById("image").outerHTML;
+				document.getElementById("chose_picture").innerHTML = "以照片搜尋";
 				console.log(res);
 				document.getElementsByClassName("post_container")[0].innerHTML = "";
 				append_data(res.data);

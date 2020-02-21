@@ -54,7 +54,6 @@ app.post('/', upload.single('image'), async function(req, res){
 			lost_location_lng: req.body.lost_address_lng,
 			lost_location_lat: req.body.lost_address_lat,
 			lost_time: req.body.lost_time,
-			other: req.body.other,
 			user_id: req.body.user_id,
 			lost_status: "finding",
 			post_type: req.body.post_type,
@@ -73,7 +72,6 @@ app.post('/', upload.single('image'), async function(req, res){
 			lost_location_lng: req.body.lost_address_lng,
 			lost_location_lat: req.body.lost_address_lat,
 			lost_time: req.body.lost_time,
-			other: req.body.other,
 			user_id: req.body.user_id,
 			lost_status: "finding",
 			post_type: req.body.post_type,
@@ -326,7 +324,11 @@ app.post('/', upload.single('image'), async function(req, res){
 
 app.get('/', async function(req, res){
 	var picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/";
-	var select_lost_record = "SELECT * from lost_pet where lost_status = \"finding\" ;"
+	if(req.query.post_type){
+		var select_lost_record = "SELECT * from lost_pet where lost_status = \""+req.query.lost_status+"\" AND post_type = \""+req.query.post_type+"\";";			
+	}else{
+		var select_lost_record = "SELECT * from lost_pet where lost_status = \""+req.query.lost_status+"\" ;"		
+	}
 	const lost_record_promise = new Promise((resolve, reject) => {
 		mysql.con.query(select_lost_record, function(err, result){
 			if(err){
@@ -352,7 +354,6 @@ app.get('/', async function(req, res){
 			lost_location_lng: lost_record[i].lost_location_lng,
 			lost_location_lat: lost_record[i].lost_location_lat,
 			lost_time: lost_record[i].lost_time,
-			other: lost_record[i].other,
 			lost_status: lost_record[i].lost_status,
 			post_type: lost_record[i].post_type,
 			title: lost_record[i].title,

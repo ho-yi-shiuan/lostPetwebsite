@@ -36,10 +36,10 @@
 			<div class="message_container">
 			<div class="message">
 				<input id="content" type="text" placeholder="input the message" />
-				<img id="submit_message" src="/images/send.png" style="margin-right: 5px; Opacity: 0.7;">
+				<img id="submit_message" src="/images/send.png" style="margin-right: 5px; Opacity: 0.7; cursor: pointer;">
 				<label class="upload_cover">
 					<input type="file" id="socket_picture" onchange="sendPicture()">
-					<span id="upload_cover_image" style="Opacity: 0.7;"><img src="/images/photo.png"></span>
+					<span id="upload_cover_image" style="Opacity: 0.7;"><img src="/images/photo.png" style="cursor: pointer;"></span>
 				</label>
 			</div>
 			</div>
@@ -387,15 +387,6 @@
 		lost_time_tr.appendChild(lost_time);
 		lost_time_tr.appendChild(lost_time_value);
 		document.getElementsByClassName("information")[0].appendChild(lost_location_tr);
-		var other = document.createElement("td");
-		other.className = "column_name";
-		other.appendChild(document.createTextNode("其他資訊"));
-		var other_value = document.createElement("td");
-		other_value.appendChild(document.createTextNode(detail.other));
-		var other_tr = document.createElement("tr");
-		other_tr.appendChild(other);
-		other_tr.appendChild(other_value);
-		document.getElementsByClassName("information")[0].appendChild(other_tr);
 		if(detail.post_type == "lost"){
 			if(detail.lost_status == "end_unfound" || detail.lost_status == "end_found"){
 				document.getElementsByClassName("message")[0].style="display: none;";

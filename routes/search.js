@@ -174,7 +174,6 @@ app.post('/', upload.single('image'), async function(req, res){
 			lost_location_lng: lost_record[i].lost_location_lng,
 			lost_location_lat: lost_record[i].lost_location_lat,
 			lost_time: lost_record[i].lost_time,
-			other: lost_record[i].other,
 			lost_status: lost_record[i].lost_status,
 			post_type: lost_record[i].post_type,
 			title: lost_record[i].title,
