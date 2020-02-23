@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel=stylesheet type="text/css" href="./index.css">
+</head>
+<body>
+<span style="font-family:Microsoft JhengHei;">
+	<header>
+	<div class = "mainheader_index">
+		<a href="/index.html"><div id = "logo"><img src="/images/pet_logo.png" height=100%></div></a>
+		<div id="sidelist_container">
+			<ul class="sidelist">
+				<li><a href="/index.html" style="text-decoration: none; color: black;">走失/發現走失總覽</a></li>
+				<li>｜</li>
+				<li><a href="/success_case.html" style="text-decoration: none; color: black;">成功案例</a></li>
+				<li>｜</li>
+				<li><a href="/new_lost.html" style="text-decoration: none; color: black;">我要刊登</a></li>
+				<li>｜</li>
+				<li><a href="/profile.html" style="text-decoration: none; color: black;">會員頁面</a></li>
+			</ul>
+		</div>
+	</div>
+	</header>
+	<div class="index_body">
+		<div class="pets" id="lost_pets"></div>
+		<div class="pets" id="find_pets"></div>
+	</div>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&libraries=places"></script>
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script>
+	//ajax 送出表單 code start*/
+	window.addEventListener('load', () => {
+		var request_status = {
+			post_type: "lost",
+			lost_status: "end_found"
+		}
+		const xhr = new XMLHttpRequest();
+		var url = "/lost_record?post_type=lost&lost_status=end_found";
+		xhr.open("get", url);
+		xhr.onload = function(){
+			var pets = JSON.parse(this.response);
+			if(pets.data.length == 0){
+				//顯示目前沒有協尋中寵物
+			}else{
+				console.log(pets);
+				append_data(pets.data);
+			}
+		}
+		xhr.send();
+	});
+	function append_data(data){
+		for(i=data.length-1; i>=0; i--){
+			var container_background = document.createElement("div");
+			container_background.className = "container";
+			var container = document.createElement("div");
+			container.className = "content_container";
+			var image_container = document.createElement("a");
+			image_container.href = "/room?id="+data[i].id;
+			var image = document.createElement("img");
+			image.className = "image";
+			image.src = data[i].picture;
+			var image_div = document.createElement("div");
+			image_div.className = "image_container";
+			image_div.appendChild(image);
+			image_container.appendChild(image_div);
+			container.appendChild(image_container);
+			var name = document.createElement("div");
+			if(data[i].post_type == "lost"){				
+				name.className = "name";
+				var pet_name = document.createTextNode(data[i].name);
+				name.appendChild(pet_name);
+				container.appendChild(name);
+			}
+			var location = document.createElement("div");
+			location.className = "location";
+			var pet_location = document.createTextNode(data[i].lost_location);
+			location.appendChild(pet_location);
+			var time = document.createElement("div");
+			time.className = "time";
+			var pet_time = document.createTextNode(data[i].lost_time);
+			time.appendChild(pet_time);
+			container.appendChild(location);
+			container.appendChild(time);
+			container_background.appendChild(container);
+			if(data[i].post_type == "lost"){
+				document.getElementById("lost_pets").appendChild(container_background);
+			}else if(data[i].post_type == "find"){
+				document.getElementById("find_pets").appendChild(container_background);				
+			}
+		}
+	}
+</script>
+</body>
+</html>

@@ -4,75 +4,582 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/css/bootstrap-multiselect.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <link rel=stylesheet type="text/css" href="./index.css">
 </head>
 <body>
 <span style="font-family:Microsoft JhengHei;">
 	<header>
-	<div class = "mainheader">
-		<a href="/index.html"><!--<div id = "logo"><img src="/images/logo.png" width=100%></div>--></a>
-
-			<ul class="headlist">
-				<li>介面1</li>
-				<li>｜</li>
-				<li>介面2</li>
-				<li>｜</li>
-				<li>介面3</li>
-			</ul>
-
-
+	<div class = "mainheader_index">
+		<a href="/index.html"><div id = "logo"><img src="/images/pet_logo.png" height=100%></div></a>
+		<div id="sidelist_container">
 			<ul class="sidelist">
-				<li><a href="/profile.html"><img src="/images/member.png"></a></li>
-				<li><img src="/images/bell.png"></li>
+				<li><a href="/index.html" style="text-decoration: none; color: black;">刊登總覽</a></li>
+				<li>｜</li>
+				<li><a href="/success_case.html" style="text-decoration: none; color: black;">成功案例</a></li>
+				<li>｜</li>
+				<li><a href="/new_lost.html" style="text-decoration: none; color: black;">我要刊登</a></li>
+				<li>｜</li>
+				<li><a href="/profile.html" style="text-decoration: none; color: black;">會員頁面</a></li>
 			</ul>
-
+		</div>
 	</div>
-	<div id = "black"></div>
 	</header>
-	<div class="body">
-		<div class="lost_pets"></div>
+	<div class="search_background">
+	<img id="search_image" src="https://d2h10qrqll8k7g.cloudfront.net/person_project/image/bar(dog).jpg">
+	<div id="bar_text">開始搜尋, 找出符合條件的走失寵物<div id="bar_row_button" onclick="row()" >開始使用</div></div>
 	</div>
-	
+	<div id="category">
+		<div id="category_lost">寵物協尋</div>
+		<div id="category_find">發現走失寵物通報</div>
+	</div>
+	<div class="search_bar">
+		<div id="select_title">依條件搜尋</div>
+		<form action="" id="select_form" method="POST" enctype="multipart/form-data">
+		<div class="form_div">
+			<div class="select_category">
+				<input type="checkbox" id="lost" name="post_type" value="lost">
+				<label for="lost">協尋</label>
+				<input type="checkbox" id="find" name="post_type" value="find">
+				<label for="find">拾獲</label>
+			</div>
+		</div>
+		<div class="form_div">
+			<div class="select_category">
+				<input type="checkbox" id="cat" name="select_category" value="cat">
+				<label for="cat">貓</label>
+				<input type="checkbox" id="dog" name="select_category" value="dog">
+				<label for="dog">狗</label>
+			</div>
+		</div>
+		<div class="form_div">
+		<select name="select_breed" multiple>
+			<option value="" disabled selected>依品種搜尋</option>
+			<optgroup label="狗">
+				<option value="米克斯">米克斯</option>
+				<option value="貴賓">貴賓</option>
+				<option value="柯基">柯基</option>
+				<option value="哈士奇">哈士奇</option>
+				<option value="黃金獵犬">黃金獵犬</option>
+				<option value="拉布拉多">拉布拉多</option>
+				<option value="柴犬">柴犬</option>
+				<option value="秋田">秋田</option>
+				<option value="古代牧羊犬">古代牧羊犬</option>
+			</optgroup>
+			<optgroup label="貓">
+				<option value="混種貓">混種貓</option>
+				<option value="摺耳貓">摺耳貓</option>
+				<option value="金吉拉">金吉拉</option>
+				<option value="波斯貓">波斯貓</option>
+				<option value="金吉拉">金吉拉</option>
+			</optgroup>
+		</select>
+		</div>
+		<div class="form_div">
+			<select name="select_color" multiple>
+				<option value="" disabled selected>依顏色搜尋</option>
+				<option value="黑">黑色</option>
+				<option value="白">白色</option>
+				<option value="咖啡">咖啡色</option>
+				<option value="灰">灰色</option>
+				<option value="橘">橘色</option>
+			</select>
+		</div>
+		<div class="form_div">
+			<div class="select_category">
+				<input type="checkbox" id="male" name="select_gender" value="female">
+				<label for="male">男</label>
+				<input type="checkbox" id="female" name="select_gender" value="male">
+				<label for="female">女</label>
+			</div>
+		</div>
+		<div class="form_div" id="address_input">
+			<input type="hidden" name="lost_address_lng"></input>
+			<input type="hidden" name="lost_address_lat"></input>
+			<input type="text" id="input_address" name="input_address" placeholder="依地點搜尋"></input></br>
+			<div id="error_message" style="color: red; display: none;">此輸入為無效地址!!!</div>
+		</div>
+		<label class="form_div choose_file">
+			<input type="file" id="image" name="image"></input>
+			<span id="upload_cover_image" style="Opacity: 0.7;"><img src="/images/photo.png"><div id="chose_picture">以照片搜尋</div></span>
+		</label>
+		<input id="submit" type="button" value="搜尋" style="width: 60px; height: 34px;">
+		</form>
+	</div>
+	<div class="body">
+		<div class="post_container">
+			<div class="post">
+				<div class="post_img_container">
+					<img class="post_image" src="https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/DSC_0110.JPG">
+				</div>
+				<div class="post_content_container">
+					<div id="post_tag">走失協尋</div>
+					<div class="post_content">
+						<div id="post_content_title">米克斯走失!! 請大家幫忙了</div>
+							<div class="post_flag_container">
+								<div class="post_flag">男</div>
+								<div class="post_flag">10歲</div>
+								<div class="post_flag">米克斯</div>
+							</div>
+						<div id="post_content_time">走失時間: 2020-02-19T12:02</div>
+						<div id="post_content_location">走失地點: 台灣台南市中西區忠義路二段浪浪別哭</div>
+						<div id="post_content_text"><p class="content">範例一共準備了三個不同顏色的 DIV 區塊，他們都用上了 CSS3 transition 來修改尺寸，各位讀者可以看到，這三個 DIV 區塊除了在範例一共準備了三個不同顏色的 DIV 區塊，他們都用上了 CSS3 transition 來修改尺寸，各位讀者可以看到，這三個 DIV 區塊除了在</p></div>
+					</div>
+				</div>
+				<div class="post_button_container">
+					<!--<div id="map0" class="index_map"></div>-->
+				</div>
+			</div>
+		</div>
+		<div class="index_body">
+			<div class="pets" id="lost_pets"></div>
+		</div>
+	</div>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&libraries=places"></script>
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/js/bootstrap-multiselect.js"></script>
 <script>
-	const xhr = new XMLHttpRequest();
-	var url = "/lost_record";
-	xhr.open("get", url);
-	xhr.onload = function(){
-		var pets = JSON.parse(this.response);
-		if(pets.data.length == 0){
-			//顯示目前沒有協尋中寵物
+	function row(){
+		$('html, body').animate({
+			scrollTop: $("#category").offset().top
+		}, 500);
+	}
+	<!-- Initialize the plugin: -->
+    $(document).ready(function() {
+        $('[name="select_breed"]').multiselect();
+        $('[name="select_color"]').multiselect();
+    });
+	//google map code start
+	console.log("開始執行map script");
+	function initMap(map_id,locate) {
+		console.log("執行init map");
+		var geocoder = new google.maps.Geocoder();
+		var map = new google.maps.Map(document.getElementById(map_id), {
+			zoom: 12,
+			styles:[
+			  {
+				"elementType": "geometry",
+				"stylers": [
+				  {
+					"color": "#f5f5f5"
+				  }
+				]
+			  },
+			  {
+				"elementType": "labels.icon",
+				"stylers": [
+				  {
+					"visibility": "off"
+				  }
+				]
+			  },
+			  {
+				"elementType": "labels.text.fill",
+				"stylers": [
+				  {
+					"color": "#616161"
+				  }
+				]
+			  },
+			  {
+				"elementType": "labels.text.stroke",
+				"stylers": [
+				  {
+					"color": "#f5f5f5"
+				  }
+				]
+			  },
+			  {
+				"featureType": "administrative.land_parcel",
+				"elementType": "labels",
+				"stylers": [
+				  {
+					"visibility": "off"
+				  }
+				]
+			  },
+			  {
+				"featureType": "administrative.land_parcel",
+				"elementType": "labels.text.fill",
+				"stylers": [
+				  {
+					"color": "#bdbdbd"
+				  }
+				]
+			  },
+			  {
+				"featureType": "poi",
+				"elementType": "geometry",
+				"stylers": [
+				  {
+					"color": "#eeeeee"
+				  }
+				]
+			  },
+			  {
+				"featureType": "poi",
+				"elementType": "labels.text",
+				"stylers": [
+				  {
+					"visibility": "off"
+				  }
+				]
+			  },
+			  {
+				"featureType": "poi",
+				"elementType": "labels.text.fill",
+				"stylers": [
+				  {
+					"color": "#757575"
+				  }
+				]
+			  },
+			  {
+				"featureType": "poi.business",
+				"stylers": [
+				  {
+					"visibility": "off"
+				  }
+				]
+			  },
+			  {
+				"featureType": "poi.park",
+				"elementType": "geometry",
+				"stylers": [
+				  {
+					"color": "#e5e5e5"
+				  }
+				]
+			  },
+			  {
+				"featureType": "poi.park",
+				"elementType": "labels.text",
+				"stylers": [
+				  {
+					"visibility": "off"
+				  }
+				]
+			  },
+			  {
+				"featureType": "poi.park",
+				"elementType": "labels.text.fill",
+				"stylers": [
+				  {
+					"color": "#9e9e9e"
+				  }
+				]
+			  },
+			  {
+				"featureType": "road",
+				"elementType": "geometry",
+				"stylers": [
+				  {
+					"color": "#ffffff"
+				  }
+				]
+			  },
+			  {
+				"featureType": "road.arterial",
+				"elementType": "labels",
+				"stylers": [
+				  {
+					"visibility": "off"
+				  }
+				]
+			  },
+			  {
+				"featureType": "road.arterial",
+				"elementType": "labels.text.fill",
+				"stylers": [
+				  {
+					"color": "#757575"
+				  }
+				]
+			  },
+			  {
+				"featureType": "road.highway",
+				"elementType": "geometry",
+				"stylers": [
+				  {
+					"color": "#dadada"
+				  }
+				]
+			  },
+			  {
+				"featureType": "road.highway",
+				"elementType": "labels",
+				"stylers": [
+				  {
+					"visibility": "off"
+				  }
+				]
+			  },
+			  {
+				"featureType": "road.highway",
+				"elementType": "labels.text.fill",
+				"stylers": [
+				  {
+					"color": "#616161"
+				  }
+				]
+			  },
+			  {
+				"featureType": "road.local",
+				"stylers": [
+				  {
+					"visibility": "off"
+				  }
+				]
+			  },
+			  {
+				"featureType": "road.local",
+				"elementType": "labels",
+				"stylers": [
+				  {
+					"visibility": "off"
+				  }
+				]
+			  },
+			  {
+				"featureType": "road.local",
+				"elementType": "labels.text.fill",
+				"stylers": [
+				  {
+					"color": "#9e9e9e"
+				  }
+				]
+			  },
+			  {
+				"featureType": "transit.line",
+				"elementType": "geometry",
+				"stylers": [
+				  {
+					"color": "#e5e5e5"
+				  }
+				]
+			  },
+			  {
+				"featureType": "transit.station",
+				"elementType": "geometry",
+				"stylers": [
+				  {
+					"color": "#eeeeee"
+				  }
+				]
+			  },
+			  {
+				"featureType": "water",
+				"elementType": "geometry",
+				"stylers": [
+				  {
+					"color": "#c9c9c9"
+				  }
+				]
+			  },
+			  {
+				"featureType": "water",
+				"elementType": "labels.text.fill",
+				"stylers": [
+				  {
+					"color": "#9e9e9e"
+				  }
+				]
+			  }
+			],
+			mapTypeControl: false,
+			fullscreenControl: false,
+			rotateControl: false,
+			scaleControl: false,
+			streetViewControl: false,
+			zoomControl: false,
+			center: locate
+		});
+		let marker = new google.maps.Marker({
+			map: map,
+			position: locate,
+			icon: '/images/black_pin.png'
+		});
+	};
+	//googlt map code end
+	//地址搜尋框
+	var autocomplete;
+	window.addEventListener('load', () => {
+		var input = document.getElementsByName('input_address')[0];
+		autocomplete = new google.maps.places.Autocomplete(input);
+		google.maps.event.addListener(autocomplete, 'place_changed', function() {
+			fillInAddress();
+		});		
+	});
+	function fillInAddress(){
+		var place = autocomplete.getPlace();
+		document.getElementsByName("lost_address_lng")[0].value = place.geometry.location.lng();
+		document.getElementsByName("lost_address_lat")[0].value = place.geometry.location.lat();
+	};
+	//googlt map code end
+	//ajax 送出表單 code start
+	document.getElementById("submit").addEventListener('click', function(){	
+		if(document.getElementsByName("input_address")[0].value.length > 0){
+			if(document.getElementsByName("lost_address_lng")[0].value.length == 0){
+				//輸入地址且地址錯誤
+				document.getElementById("error_message").style = "color: red; display: block";
+			}else{
+				ajax_search();
+				document.getElementById("error_message").style = "display: none";
+			}
 		}else{
-			for(i=0; i<pets.data.length; i++){
-				var container = document.createElement("div");
-				container.className = "container";
-				var image_container = document.createElement("a");
-				//image_container.href = 
-				var image = document.createElement("img");
-				image.className = "image";
-				image.src = pets.data[i].picture;
-				//照片連結
-				image_container.appendChild(image);
-				var name = document.createElement("div");
-				name.className = "name";
-				var pet_name = document.createTextNode(pets.data[i].name);
-				name.appendChild(pet_name);
-				var location = document.createElement("div");
-				location.className = "location";
-				var pet_location = document.createTextNode(pets.data[i].lost_location);
-				location.appendChild(pet_location);
-				var time = document.createElement("div");
-				time.className = "time";
-				var pet_time = document.createTextNode(pets.data[i].lost_time);
-				time.appendChild(pet_time);
-				container.appendChild(image_container);
-				container.appendChild(name);
-				container.appendChild(location);
-				container.appendChild(time);
-				document.getElementsByClassName("lost_pets")[0].appendChild(container);				
+			ajax_search();
+			document.getElementById("error_message").style = "display: none";
+		}
+	});
+	//ajax 送出表單 code start*/
+	window.addEventListener('load', () => {
+		const xhr = new XMLHttpRequest();
+		var url = "/lost_record?lost_status=finding";
+		xhr.open("get", url);
+		xhr.onload = function(){
+			var pets = JSON.parse(this.response);
+			if(pets.data.length == 0){
+				//顯示目前沒有協尋中寵物
+			}else{
+				console.log(pets);
+				append_data(pets.data);
 			}
 		}
+		xhr.send();
+	});
+	$("#image").on("change",function (e) {
+		console.log("已選檔案");
+		var e = e || window.event;
+		//獲取 檔案 個數 取消的時候使用
+		var files = e.target.files;
+		console.log(files[0].name);
+		if(files.length>0){
+			// 獲取檔名 並顯示檔名
+			var fileName = files[0].name;
+			document.getElementById("chose_picture").innerHTML = fileName;
+		}else{
+			//清空檔名
+			document.getElementById("chose_picture").innerHTML = "以照片搜尋";
+		}
+	});	
+	function ajax_search(){
+		var form = $('form')[0];
+		var formData = new FormData(form);
+		console.log(formData);
+		$.ajax({
+			contentType: false,
+			cache: false,
+			processData: false,
+			type: "post",
+			url: "/search",
+			data: formData,
+			success: function(res){
+				document.getElementById("image").outerHTML = document.getElementById("image").outerHTML;
+				document.getElementById("chose_picture").innerHTML = "以照片搜尋";
+				console.log(res);
+				document.getElementsByClassName("post_container")[0].innerHTML = "";
+				append_data(res.data);
+			},
+			error: function(err){
+				console.log(err);
+			}
+		});	
 	}
-	xhr.send();
+	function append_data(data){
+		for(i=data.length-1; i>=0; i--){
+			let link = document.createElement("a");
+			link.className = "post_link";
+			link.href = "/room?id="+data[i].id;
+			let post = document.createElement("div");
+			post.className = "post";
+			let post_img_container = document.createElement("div");
+			post_img_container.className = "post_img_container";
+			let post_image = document.createElement("img");
+			post_image.className = "post_image";
+			post_image.src = data[i].picture;
+			post_img_container.appendChild(post_image);
+			
+			let post_content_container = document.createElement("div");
+			post_content_container.className = "post_content_container";
+			let post_tag = document.createElement("div");
+			post_tag.id = "post_tag";
+			if(data[i].post_type == "lost"){
+				post_tag.appendChild(document.createTextNode("走失協尋"));
+			}else{
+				post_tag.appendChild(document.createTextNode("拾獲刊登"));
+			}
+			post_content_container.appendChild(post_tag);
+			let post_content = document.createElement("div");
+			post_content.className = "post_content";
+			let post_content_title = document.createElement("div");
+			post_content_title.id = "post_content_title";
+			post_content_title.appendChild(document.createTextNode(data[i].title));
+			post_content.appendChild(post_content_title);
+			post_content_container.appendChild(post_content);
+			let post_flag_container = document.createElement("div");
+			post_flag_container.className = "post_flag_container";
+			if(data[i].gender){
+				let post_flag_gender = document.createElement("div");
+				post_flag_gender.className = "post_flag";
+				if(data[i].gender == "male"){
+					post_flag_gender.appendChild(document.createTextNode("男"));			
+				}else{
+					post_flag_gender.appendChild(document.createTextNode("女"));			
+				}
+				post_flag_container.appendChild(post_flag_gender);			
+			}			
+			if(data[i].age){
+				let post_flag_age = document.createElement("div");
+				post_flag_age.className = "post_flag";
+				post_flag_age.appendChild(document.createTextNode(data[i].age));
+				post_flag_container.appendChild(post_flag_age);			
+			}
+			if(data[i].breed){
+				let post_flag_breed = document.createElement("div");
+				post_flag_breed.className = "post_flag";
+				post_flag_breed.appendChild(document.createTextNode(data[i].breed));
+				post_flag_container.appendChild(post_flag_breed);			
+			}			
+			post_content.appendChild(post_flag_container);
+			let post_content_time = document.createElement("div");
+			post_content_time.id = "post_content_time";
+			post_content_time.appendChild(document.createTextNode("走失時間: "+data[i].lost_time));
+			post_content.appendChild(post_content_time);
+			let post_content_location = document.createElement("div");
+			post_content_location.id = "post_content_location";
+			post_content_location.appendChild(document.createTextNode("走失地點: "+data[i].lost_location));
+			post_content.appendChild(post_content_location);			
+			let post_content_text = document.createElement("div");
+			post_content_text.id = "post_content_text";
+			let content = document.createElement("p");
+			content.className = "content";
+			content.appendChild(document.createTextNode(data[i].content));
+			post_content_text.appendChild(content);
+			post_content.appendChild(post_content_text);
+			let post_button_container = document.createElement("div");
+			post_button_container.className = "post_button_container";
+			let index_map = document.createElement("div");
+			index_map.className = "index_map";
+			index_map.id = "map"+i;
+			post_button_container.appendChild(index_map);
+			post.appendChild(post_img_container);
+			post.appendChild(post_content_container);
+			post.appendChild(post_button_container);
+			link.appendChild(post);
+			document.getElementsByClassName("post_container")[0].appendChild(link);
+			let map_id = "map"+i;
+			let locate = {
+				lat: data[i].lost_location_lat, // 經度
+				lng: data[i].lost_location_lng // 緯度
+			};
+			console.log(map_id);
+			console.log(locate);
+			initMap(map_id,locate);
+		} 
+	}
 </script>
 </body>
 </html>
