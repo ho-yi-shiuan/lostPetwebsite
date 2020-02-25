@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel=stylesheet type="text/css" href="./index.css">
+</head>
+<body>
+<span style="font-family:Microsoft JhengHei;">
+	<header>
+	<div class = "mainheader_index">
+		<a href="/index.html"><div id = "logo"><img src="/images/pet_logo.png" height=100%></div></a>
+		<div id="sidelist_container">
+			<ul class="sidelist">
+				<li><a href="/index.html" style="text-decoration: none; color: black;">刊登總覽</a></li>
+				<li>｜</li>
+				<li><a href="/success_case.html" style="text-decoration: none; color: black;">成功案例</a></li>
+				<li>｜</li>
+				<li><a href="/new_lost.html" style="text-decoration: none; color: black;">我要刊登</a></li>
+				<li>｜</li>
+				<li><a href="/profile.html" style="text-decoration: none; color: black;">會員頁面</a></li>
+			</ul>
+		</div>
+	</div>
+	</header>
+	<div class="userprofile">
+		<div class="head">會員資料</div>
+		<hr id="divider">
+		<div class="user_line">
+			<div class="nameline">姓名: </div>
+			<div class="emailline">信箱: </div>
+		</div>
+		<div>請輸入住家, 公司等常出現位置, 若有寵物在附近走失可得知訊息:</div>
+		<div style="margin-top: 10px;">
+			<input type="text" id="input_address"></input>
+			<input type="button" id="select_current_spot" value="存取目前位置"></input><input type="button" id="submit_mark" value="送出"></input>
+			<div id="error_message" style="color: white; display: none;">此輸入為無效地址!!!</div>
+			<input type="hidden" name="lost_address_lng"></input>
+			<input type="hidden" name="lost_address_lat"></input>
+		</div>
+		<div id="profile_map" style="color: black; margin-top: 10px;"></div>		
+		<div id="signout" onclick="signout()"><a href="signin.html" style="text-decoration: none; color: white;">登出</a></div>
+	</div>
+	<div class="message">
+		<div class="head">訊息</div>
+		<hr id="divider">
+		<div class="message_container">
+			<div class="message_time"><div class="message_time_title">時間: </div></div>
+			<div class="message_content"><div class="message_content_title">訊息內容: </div></div>
+		</div>
+		<div class="hide_display_container"></div>
+	</div>
+	<div class="user_lost_data">
+		<div id="profile_list_container">
+			<ul class="profile_list">
+				<li style="cursor: pointer;"><div id="profile_list_lost" onclick="get_lost()">協尋中寵物</div></li>
+				<li>｜</li>
+				<li style="cursor: pointer;"><div id="profile_list_lost_record" onclick="get_past_lost()">過去協尋記錄</div></li>
+				<li>｜</li>
+				<li style="cursor: pointer;"><div id="profile_list_find" onclick="get_find()">發現走失寵物記錄</div></li>
+			</ul>
+		</div>
+			<hr id="lost_divider" style="width: 90%; margin: 20px auto;">
+			<!-- <div class="profile_container"> -->
+				<!-- <div class="profile_image_container"> -->
+					<!-- <img id="profile_image" src="https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/158226630428084960779_1825830644227979_7082599928089804800_o.jpg"> -->
+				<!-- </div> -->
+				<!-- <div class="profile_lost_content"> -->
+					<!-- <div class="close">關閉協尋</div> -->
+					<!-- <div class="profile_content_li" id="profile_content_name">姓名: 米腸</div> -->
+					<!-- <div class="profile_content_li">性別: 女</div> -->
+					<!-- <div class="profile_content_li">年齡: 3歲</div> -->
+					<!-- <div class="profile_content_li">品種: 米克斯</div> -->
+					<!-- <div class="profile_content_li">顏色: 白</div> -->
+					<!-- <div class="profile_content_li">時間: 2020-02-19T12:02</div> -->
+					<!-- <div class="profile_content_li">地點: 台灣台南市中西區忠義路二段浪浪別哭</div> -->
+					<!-- <div class="profile_content_li">標題: 寵物走失協尋</div> -->
+					<!-- <div class="profile_content_li" id="profile_content_text"><p id="text">內文: 範例一共準備了三個不同顏色的 DIV 區塊，他們都用上了 CSS3 transition 來修改尺寸，各位讀者可以看到，這三個 DIV 區塊除了在範例一共準備了三個不同顏色的 DIV 區塊，他們都用上</p></div> -->
+				<!-- </div> -->
+			<!-- </div> -->
+		<div class="user_lost_list">		
+		</div>
+	</div>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/locale/zh-tw.js'></script>
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script src="js/profile.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&libraries=places&callback=initMap"></script>
+</span>
+</body>
+</html>
