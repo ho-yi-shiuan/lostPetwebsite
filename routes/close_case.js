@@ -18,7 +18,7 @@ app.post('/', async function(req, res){
 			console.log("update lost_status successful!");
 			res.send({status: "success"});
 		}
-	});
+	});	
 });
 	
 module.exports = app;

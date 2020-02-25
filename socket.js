@@ -126,6 +126,20 @@ io.on('connection', async function(socket){
 		console.log('有人離開了room ' + room_id);
 		socket.leave(room_id);
 	});
+	socket.on("close_room", function(obj){
+		console.log(obj);
+		var update_status = "UPDATE lost_pet SET lost_status = \""+obj.close_status+"\" where pet_id = "+obj.close_id;
+		console.log(update_status);
+		mysql.con.query(update_status, function(err,result){
+			if(err){
+				console.log("close_case api: ");
+				console.log(err);
+			}else{
+				console.log("update lost_status successful!");
+				io.emit("redirect");
+			}
+		});		
+	})
 });
 
 

@@ -179,8 +179,8 @@ function ajax_list(get_type){
 			}else if(res.status == "wrong"){
 				document.location.href = "/signin.html";
 			}else{
-				document.getElementsByClassName("nameline")[0].innerHTML = "姓名: "+res.data.name;
-				document.getElementsByClassName("emailline")[0].innerHTML = "信箱: "+res.data.email;
+				document.getElementsByClassName("nameline")[0].innerHTML = res.data.name;
+				document.getElementsByClassName("emailline")[0].innerHTML = res.data.email;
 				console.log(res);
 				user_id = res.data.id;
 				document.getElementsByClassName("user_lost_list")[0].innerHTML = "";
@@ -367,9 +367,6 @@ function append_data(res){
 			}
 		}
 	}else{
-		var divider = document.createElement("hr");
-		divider.id = "divider";
-		document.getElementsByClassName("user_lost_list")[0].appendChild(divider);
 		var no_data = document.createElement("div");
 		var no_data_text = document.createTextNode("-目前無資料-");
 		no_data.appendChild(no_data_text);
@@ -484,30 +481,23 @@ function message_to_room(room_id){
 			console.log("form radio status = "+form.pet_found[i].value);
 		}
 	}
-	$.ajax({
-		contentType :"application/json",
-		type: "POST",
-		url: "/close_case",
-		data: JSON.stringify(status),
-		success: function(res)
-			{
-				console.log("ajax success message: "+room_id);
-				var user_info = {
-					user_name: "test",
-					room_id: room_id
-				}
-				var socket = io.connect();
-				socket.on('connect', function (){
-					socket.emit('join', user_info);
-				});
-				let data = {
-					name: "test",
-					content: document.getElementById("close_message"+room_id).value,
-				};
-				console.log("ajax success message: "+data);
-				socket.emit('message_to_backend', data);
-			},
-		dataType: "json"
+	//整個ajax 拿掉, 改成用socket做
+	var user_info = {
+		user_name: document.getElementsByClassName("nameline")[0].innerHTML,
+		room_id: room_id
+	}
+	var socket = io.connect();
+	socket.on('connect', function (){
+		socket.emit('join', user_info);
 	});
-	//document.location.href = "/profile.html";
+	socket.emit('close_room', status);
+	let data = {
+		name: document.getElementsByClassName("nameline")[0].innerHTML,
+		content: document.getElementById("close_message"+room_id).value,
+	};
+	socket.emit('message_to_backend', data);
+	socket.on('redirect', function(obj){
+		console.log("update_success!");
+		document.location.href = "/profile.html";
+	})
 }
