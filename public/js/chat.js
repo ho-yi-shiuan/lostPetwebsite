@@ -33,6 +33,7 @@ var geocoder;
 function initMap() {
 	console.log("執行init map");
 	geocoder = new google.maps.Geocoder();
+	polyline = new google.maps.Polygon();
 	map = new google.maps.Map(document.getElementById('map'), {
 		zoom: 15
 	});
@@ -364,7 +365,7 @@ xhr.onload = async function(){
 			var marker = new google.maps.Marker({
 				map: map,
 				position: results[0].geometry.location,//new google.maps.LatLng(22.991965, 120.202518),
-				icon: '/images/placeholder.png'
+				icon: '/images/placeholder.png',
 			});
 			if(detail.post_type == "find"){
 				var infowindow = new google.maps.InfoWindow({
@@ -446,21 +447,14 @@ xhr.onload = async function(){
 				}
 			}
 			//最遠點跟走失點連線
-			var lineSymbol = {
-				path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW
-			};
 			polyline = new google.maps.Polygon({
 				map: map,
 				paths: [lost_point,polygonPathPoints[farest_index]],
-				icons: [{
-					icon: lineSymbol,
-					offset: '100%'
-				}],
 				strokeColor: "rgba(255,255,0)",
 				strokeWidth: 6,
 				zIndex: 100
-			});			
-			let farest_report = document.createTextNode(" : 最遠曾移動至距離走失地點"+(farest_distance/1000).toFixed(1)+"公里處");
+			});					
+			let farest_report = document.createTextNode(" : 最遠曾移動至距離走失地點"+(farest_distance/1000).toFixed(1)+"公里處 ");
 			let farest_line = document.createElement("img");
 			farest_line.src = "/images/line.png";
 			document.getElementsByClassName("mark_information")[0].appendChild(farest_line);
