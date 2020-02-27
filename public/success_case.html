@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel=stylesheet type="text/css" href="./index.css">
+</head>
+<body>
+	<div class="map_background">
+		<div class="success_page_header">
+			<div class = "mainheader_index">
+				<a href="/index.html"><div id = "logo"><img src="/images/pet_logo.png" height=100%></div></a>
+				<div id="sidelist_container">
+					<ul class="sidelist">
+						<li><a href="/index.html" style="text-decoration: none; color: black;">走失/發現走失總覽</a></li>
+						<li>｜</li>
+						<li><a href="/success_case.html" style="text-decoration: none; color: black;">成功案例</a></li>
+						<li>｜</li>
+						<li><a href="/new_lost.html" style="text-decoration: none; color: black;">我要刊登</a></li>
+						<li>｜</li>
+						<li><a href="/profile.html" style="text-decoration: none; color: black;">會員頁面</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div id="success_page_map"></div>
+	</div>
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script>
+	var map;
+	function initMap() {
+		console.log("執行init map");
+		geocoder = new google.maps.Geocoder();
+		map = new google.maps.Map(document.getElementById('success_page_map'), {
+			zoom: 8,
+			center: {
+			  lat: 23.909270,
+			  lng: 121.035362
+			},
+			mapTypeControl: false,
+			fullscreenControl: false,
+			rotateControl: false,
+			scaleControl: false,
+			streetViewControl: false,
+			zoomControl: false,
+			styles:[
+				{
+					"featureType": "landscape.man_made",
+					"elementType": "geometry",
+					"stylers": [
+						{
+							"color": "#f7f1df"
+						}
+					]
+				},
+				{
+					"featureType": "landscape.natural",
+					"elementType": "geometry",
+					"stylers": [
+						{
+							"color": "#d0e3b4"
+						}
+					]
+				},
+				{
+					"featureType": "landscape.natural.terrain",
+					"elementType": "geometry",
+					"stylers": [
+						{
+							"visibility": "off"
+						}
+					]
+				},
+				{
+					"featureType": "poi",
+					"elementType": "labels",
+					"stylers": [
+						{
+							"visibility": "off"
+						}
+					]
+				},
+				{
+					"featureType": "poi.business",
+					"elementType": "all",
+					"stylers": [
+						{
+							"visibility": "off"
+						}
+					]
+				},
+				{
+					"featureType": "poi.medical",
+					"elementType": "geometry",
+					"stylers": [
+						{
+							"color": "#fbd3da"
+						}
+					]
+				},
+				{
+					"featureType": "poi.park",
+					"elementType": "geometry",
+					"stylers": [
+						{
+							"color": "#bde6ab"
+						}
+					]
+				},
+				{
+					"featureType": "road",
+					"elementType": "geometry.stroke",
+					"stylers": [
+						{
+							"visibility": "off"
+						}
+					]
+				},
+				{
+					"featureType": "road",
+					"elementType": "labels",
+					"stylers": [
+						{
+							"visibility": "off"
+						}
+					]
+				},
+				{
+					"featureType": "road.highway",
+					"elementType": "geometry.fill",
+					"stylers": [
+						{
+							"color": "#ffe15f"
+						}
+					]
+				},
+				{
+					"featureType": "road.highway",
+					"elementType": "geometry.stroke",
+					"stylers": [
+						{
+							"color": "#efd151"
+						}
+					]
+				},
+				{
+					"featureType": "road.arterial",
+					"elementType": "geometry.fill",
+					"stylers": [
+						{
+							"color": "#ffffff"
+						}
+					]
+				},
+				{
+					"featureType": "road.local",
+					"elementType": "geometry.fill",
+					"stylers": [
+						{
+							"color": "black"
+						}
+					]
+				},
+				{
+					"featureType": "transit.station.airport",
+					"elementType": "geometry.fill",
+					"stylers": [
+						{
+							"color": "#cfb2db"
+						}
+					]
+				},
+				{
+					"featureType": "water",
+					"elementType": "geometry",
+					"stylers": [
+						{
+							"color": "#a2daf2"
+						}
+					]
+				}
+			]
+		});
+		//ajax 送出表單 code start*/
+		window.addEventListener('load', () => {
+			var request_status = {
+				post_type: "lost",
+				lost_status: "end_found"
+			}
+			const xhr = new XMLHttpRequest();
+			var url = "/lost_record?post_type=lost&lost_status=end_found";
+			xhr.open("get", url);
+			xhr.onload = function(){
+				var pets = JSON.parse(this.response);
+				if(pets.data.length == 0){
+					//顯示目前沒有協尋成功的寵物
+				}else{
+					console.log(pets);
+					append_data(pets.data);
+				}
+			}
+			xhr.send();
+		});
+		function append_data(data){
+			for(i=data.length-1; i>=0; i--){
+				let mark_content = "<div style=\"width: 300px;><div style=\"text-align: center;\">姓名: "+data[i].name+"</div>";
+				mark_content += "<div style=\"text-align: center;\">走失地點: "+data[i].lost_location+"</div>"
+				mark_content+= "<div style=\"width: 300px; display:block;\"><img id=\"mark_image\" style=\"margin:0 auto; height: 250px; width: 250px; object-fit: cover;\" src=\""+data[i].picture+"\"></img></div></div>";
+				let locate = {
+					lat: data[i].lost_location_lat, // 經度
+					lng: data[i].lost_location_lng // 緯度
+				};
+				let marker = new google.maps.Marker({
+					map: map,
+					position: new google.maps.LatLng(locate),
+					icon: '/images/black_pin.png'
+				});
+				let infowindow = new google.maps.InfoWindow({
+					content: mark_content
+				});
+				marker.addListener('click', function() {
+					infowindow.open(map, marker);
+				});			
+			}
+		}
+	}
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&libraries=places&callback=initMap"></script>
+</body>
+</html>
