@@ -5,115 +5,74 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <link rel=stylesheet type="text/css" href="./socket.css">
-
 </head>
 <body>
-<div class = "body">
-	<div class = "profile_map">
-		<div class = "profile">
-		
+	<header>
+	<div class = "mainheader_index">
+		<a href="/index.html"><div id = "logo"><img src="/images/logo(black).png" height=100%></div></a>
+		<div id="sidelist_container">
+			<ul class="sidelist">
+				<li><a href="/index.html" style="text-decoration: none; color: black;">刊登總覽</a></li>
+				<li>｜</li>
+				<li><a href="/success_case.html" style="text-decoration: none; color: black;">成功案例</a></li>
+				<li>｜</li>
+				<li><a href="/new_lost.html" style="text-decoration: none; color: black;">我要刊登</a></li>
+				<li>｜</li>
+				<li><a href="/profile.html" style="text-decoration: none; color: black;">會員頁面</a></li>
+			</ul>
 		</div>
-		<div id="map">
-		
-		</div>	
 	</div>
-	<div class = "chatroom">
+	</header>
+	<div class="body">
+	<div id="post_title"></div>
+	<div class = "profile_map">
+		<div class = "picture"></div>
+		<div class="post_content"></div>
+	</div>
+	<hr style="width: 100%; margin: 20px 0;"></hr>
+	<div style="font-size:30px; text-align: center;">相關資訊</div>
+	<table class = "information"></table>
+	<hr style="width: 100%; margin: 20px 0;"></hr>
+	<div id="chatroom_title" style="font-size:30px; text-align: center;">即時回報訊息</div>
+	<div id="chatroom_welcome_message" style="text-align: center; margin: 20px 0 10px 0;">若有該寵物的新資訊, 歡迎利用以下聊天室隨時回報</div>
+	<div class = "chatroom" onkeydown="keyLogin();">
 		<div class="chats">
 		</div>
+		<div class="message_container">
 		<div class="message">
-			<input id="name" type="text" placeholder="your name" />
-			<input id="content" type="text" placeholder="input the message" />
-			<button type="button">送出</button>
+			<input id="content" type="text" placeholder="請輸入訊息" />
+			<img id="submit_message" src="/images/send.png" style="margin-right: 5px; Opacity: 0.7; cursor: pointer;">
+			<label class="upload_cover">
+				<input type="file" id="socket_picture" onchange="sendPicture()">
+				<span id="upload_cover_image" style="Opacity: 0.7;"><img src="/images/photo.png" style="cursor: pointer;"></span>
+			</label>
 		</div>
+		</div>
+	</div>
+	<hr style="width: 100%; margin: 20px 0;"></hr>
+	<div class = "mark">
+		<div style="font-size:30px" id="map_title">曾出沒地點</div>
+		<div class="mark_information">
+			<img src="/images/placeholder.png"> : 走失地點
+			<img src="/images/pin.png"> : 回報出現地點(點擊標記可觀看回報相關資訊)
+		</div>
+		<div id="farest_report"></div>
+		<div class="map_container"><div id="map"></div></div>
+		<div class="add_mark">
+			<b style="font-size:16px; margin-top: 5px;">若發現該寵物出現, 請加入回報行列: </b>
+			<input type="text" id="insert_mark"></input>
+			<button id="select_current_spot">存取目前位置</button>
+			<input id="insert_info" type = "text" placeholder = "請輸入發現時間等其他資訊, ex: 1/10上午10點發現, 與其他流浪犬集體出現" style="width:450px;"></input>		
+			<button id="submit_mark">送出</button>
+		</div>
+	</div>
 	</div>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/locale/zh-tw.js'></script>
-<script>
-//google map code start
-console.log("開始執行map script");
-var map;
-function initMap() {
-	console.log("執行init map");
-	  map = new google.maps.Map(document.getElementById('map'), {
-		center: {lat: -34.397, lng: 150.644},
-		zoom: 8
-	  });
-}
-//googlt map code end
-//socket code start
-console.log("開始執行socket script");
-socket = io.connect();
-document.querySelector('button').addEventListener('click', function(){
-	Send();
-});
-
-function Send() {
-
-    let name = document.querySelector('#name').value;
-    let content = document.querySelector('#content').value;
-    if (!content && !name) {
-        alert('請輸入姓名和訊息');
-        return;
-    }
-    let data = {
-        name: name,
-        content: content,
-    };
-	//傳訊息給後端
-	console.log(data);
-    socket.emit('message', data);
-    document.querySelector('#content').value = '';
- 
-}
-
-//顯示歷史訊息
-socket.on('history', function(obj){
-    if (obj.length > 0) {
-        appendData(obj);
-    }
-});
-
-//收到後端傳來的訊息如何處理
-socket.on('message', (obj) => {
-    console.log(obj);
-    appendData([obj]);
-});
-
-function appendData(obj){
-	obj.forEach(function(element){
-		var chat = document.createElement("div");
-		chat.className = "chat";
-		var group = document.createElement("div");
-		group.className = "group";
-		var name = document.createElement("div");
-		name.className = "name";
-		var content = document.createElement("div");
-		content.className = "content";
-		var element_name = document.createTextNode(element.name);
-		var element_content = document.createTextNode(element.content);
-		var time = document.createElement("div");
-		time.className = "time";
-		var element_time = document.createTextNode(moment(element.time).fromNow());
-		time.appendChild(element_time);
-		name.appendChild(element_name);
-		content.appendChild(element_content);
-		group.appendChild(name);
-		group.appendChild(content);
-		chat.appendChild(group);
-		chat.appendChild(time);
-		document.getElementsByClassName("chats")[0].appendChild(chat);
-	});
-	scrollWindow();
-}
-
-function scrollWindow(){
-    let h = document.querySelector('.chats');//回傳第一個找到的class
-    h.scrollTo(0, h.scrollHeight);
-}
-//socket code end
-
-</script>
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&callback=initMap"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script src="js/chat.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&libraries=geometry,places&callback=initMap"></script>
 </body>
 </html>
