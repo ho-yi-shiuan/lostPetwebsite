@@ -240,7 +240,7 @@ body {
 }
 
 .chat_picture_file {
-	width: 75%;
+	max-width: 300px;
 }
 
 .chats .chat .time {
@@ -290,3 +290,7 @@ body {
 	color: black;
 }
 
+footer {
+	width: 100%;
+	height: 50px;
+}

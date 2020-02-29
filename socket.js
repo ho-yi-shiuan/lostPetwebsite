@@ -8,7 +8,7 @@ var bodyParser = require('body-parser');
 var mysql = require("./mysqlcon.js");
 
 AWS.config.loadFromPath('./s3_config.json');
-var s3Bucket = new AWS.S3( { params: {Bucket: 'yssites.com/person_project/socket'} } );
+var s3Bucket = new AWS.S3( { params: {Bucket: 'shiuan/person_project/socket'} } );
 
 app.use(express.static("public"));// 待改善: 訊息按 enter可直接發送
 //新增走失紀錄 api
@@ -92,16 +92,17 @@ io.on('connection', async function(socket){
 		let user_picture = await user_picture_promise;
 		data_text.picture = user_picture[0].picture;
 		console.log(data_text);
-		io.to(room_id).emit("message", data_text);
+		io.to(room_id).emit("message", [data_text]);
 	});
 	//前端上傳圖片給後端
-	socket.on('sendImg', (obj) => {
+	socket.on('sendImg', async function(obj){
 		console.log("socket收到前端圖片");
 		var data = {
 			name:obj.name,
 			content:"",
 			content_type: "image",
-			time:Date.now()
+			time:Date.now(),
+			user_id: obj.user_id
 		}
 		//s3 code start
 		const base64Data = new Buffer.from(obj.img.replace(/^data:image\/\w+;base64,/, ""), 'base64');
@@ -124,7 +125,17 @@ io.on('connection', async function(socket){
 				}
 			});	
 		});
-		promise1.then(function(key) {
+		promise1.then( async function(key) {
+			const user_picture_promise = new Promise((resolve, reject) => {
+				mysql.con.query("SELECT picture from user where id = "+obj.user_id, function(err,res){
+					if(err){
+						console.log(err);
+					}else{
+						console.log("select user picture from db successful!");
+						resolve(res);
+					}
+				})
+			})
 			data.content = key;
 			mysql.con.query("INSERT INTO socket" +room_id+ " set?", data, function(err,res){
 				if(err){
@@ -133,7 +144,10 @@ io.on('connection', async function(socket){
 					console.log("insert message(picture) to db successful!");
 				}
 			})
-			io.to(room_id).emit('receiveImg', data);
+			let user_picture = await user_picture_promise;
+			data.picture = user_picture[0].picture;
+			console.log(data);
+			io.to(room_id).emit('receiveImg', [data]);
 		});
 		//s3 code end
 	});

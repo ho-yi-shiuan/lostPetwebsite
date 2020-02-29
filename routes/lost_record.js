@@ -94,7 +94,7 @@ app.post('/', upload.single('image'), async function(req, res){
 		});
 	})
 	const insert_lost_pet = await insert_lost_pet_promise;
-	var create_chat_table = "CREATE TABLE socket"+insert_lost_pet.insertId+"(id bigint(20) NOT NULL AUTO_INCREMENT, name varchar(45) DEFAULT NULL, content varchar(45) DEFAULT NULL, content_type varchar(20), time bigint(20) DEFAULT NULL, user_id bigint(20), PRIMARY KEY (id));";
+	var create_chat_table = "CREATE TABLE socket"+insert_lost_pet.insertId+"(id bigint(20) NOT NULL AUTO_INCREMENT, name varchar(45) DEFAULT NULL, content varchar(255) DEFAULT NULL, content_type varchar(20), time bigint(20) DEFAULT NULL, user_id bigint(20), PRIMARY KEY (id));";
 	mysql.con.query(create_chat_table,function(err, result){
 		if(err){
 			console.log("lost_record api(post, create chat table): \n");

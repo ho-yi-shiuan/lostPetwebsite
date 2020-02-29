@@ -17,12 +17,12 @@ function init_socket(user_info){
 	//收到後端傳來的圖片處理
 	socket.on('receiveImg', (obj) => {
 		console.log(obj);
-		appendImage(obj);
+		appendData(obj);
 	})
 	//收到後端傳來的訊息如何處理
 	socket.on('message', function(message_obj){
 		console.log(message_obj);
-		appendData([message_obj]);
+		appendData(message_obj);
 	});
 }
 //socket code end
@@ -123,7 +123,8 @@ function sendPicture(){
 	reader.onload =function(){
 		var data = {
 			name: user_name,
-			img: this.result
+			img: this.result,
+			user_id: user_id
 		};
 		//let data = {img: this.result};
 		socket.emit('sendImg', data);
@@ -142,7 +143,7 @@ function appendImage(obj){
 	user_picture_container.className = "user_picture";	
 	var user_picture_file = document.createElement("img");
 	user_picture_file.className = "user_picture_file";
-	user_picture_file.src = element.picture;
+	user_picture_file.src = obj.picture;
 	user_picture_container.appendChild(user_picture_file);
 	//把照片跟訊息內容append進一個container, 其flex row
 	name_content.appendChild(user_picture_container);
