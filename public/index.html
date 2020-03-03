@@ -4,75 +4,125 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/css/bootstrap-multiselect.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <link rel=stylesheet type="text/css" href="./index.css">
+<title>陪你回家</title>
+<link rel="icon" href="/images/pet_logo.ico" type="image/x-icon"/>
+<link rel="shortcut icon" href="/images/pet_logo.ico" type="image/x-icon"/>
 </head>
 <body>
-<span style="font-family:Microsoft JhengHei;">
 	<header>
-	<div class = "mainheader">
-		<a href="/index.html"><!--<div id = "logo"><img src="/images/logo.png" width=100%></div>--></a>
-
-			<ul class="headlist">
-				<li>介面1</li>
-				<li>｜</li>
-				<li>介面2</li>
-				<li>｜</li>
-				<li>介面3</li>
-			</ul>
-
-
+	<div class = "mainheader_index" style="background-color: rgba(0,0,0,0.7);">
+		<a href="/index.html"><div id = "logo"><img src="/images/logo(white).png" height=100%></div></a>
+		<div id="sidelist_container">
 			<ul class="sidelist">
-				<li><a href="/profile.html"><img src="/images/member.png"></a></li>
-				<li><img src="/images/bell.png"></li>
+				<li><a href="/index.html" style="text-decoration: none; color: white;">刊登總覽</a></li>
+				<li style="color: white;">｜</li>
+				<li><a href="/success_case.html" style="text-decoration: none; color: white;">成功案例</a></li>
+				<li style="color: white;">｜</li>
+				<li><a href="/new_lost.html" style="text-decoration: none; color: white;">我要刊登</a></li>
+				<li style="color: white;">｜</li>
+				<li><a href="/profile.html" style="text-decoration: none; color: white;">會員頁面</a></li>
 			</ul>
-
+		</div>
 	</div>
-	<div id = "black"></div>
 	</header>
-	<div class="body">
-		<div class="lost_pets"></div>
+	<div class="search_background">
+	<img id="search_image" src="images/bar(dog).jpg">
+	<div id="bar_text">加入我們, 一起幫助更多走失寵物回家<div id="bar_row_button" onclick="row()" >開始使用</div></div>
 	</div>
-	
-<script>
-	const xhr = new XMLHttpRequest();
-	var url = "/lost_record";
-	xhr.open("get", url);
-	xhr.onload = function(){
-		var pets = JSON.parse(this.response);
-		if(pets.data.length == 0){
-			//顯示目前沒有協尋中寵物
-		}else{
-			for(i=0; i<pets.data.length; i++){
-				var container = document.createElement("div");
-				container.className = "container";
-				var image_container = document.createElement("a");
-				//image_container.href = 
-				var image = document.createElement("img");
-				image.className = "image";
-				image.src = pets.data[i].picture;
-				//照片連結
-				image_container.appendChild(image);
-				var name = document.createElement("div");
-				name.className = "name";
-				var pet_name = document.createTextNode(pets.data[i].name);
-				name.appendChild(pet_name);
-				var location = document.createElement("div");
-				location.className = "location";
-				var pet_location = document.createTextNode(pets.data[i].lost_location);
-				location.appendChild(pet_location);
-				var time = document.createElement("div");
-				time.className = "time";
-				var pet_time = document.createTextNode(pets.data[i].lost_time);
-				time.appendChild(pet_time);
-				container.appendChild(image_container);
-				container.appendChild(name);
-				container.appendChild(location);
-				container.appendChild(time);
-				document.getElementsByClassName("lost_pets")[0].appendChild(container);				
-			}
-		}
-	}
-	xhr.send();
-</script>
+	<!-- <div id="category"> -->
+		<!-- <div id="category_lost">寵物協尋</div> -->
+		<!-- <div id="category_find">發現走失寵物通報</div> -->
+	<!-- </div> -->
+	<div class="search_bar">
+		<div id="select_title">依條件搜尋</div>
+		<form action="" id="select_form" method="POST" enctype="multipart/form-data">
+		<div class="form_div">
+			<div class="select_category">
+				<input type="checkbox" id="lost" name="post_type" value="lost">
+				<label for="lost">協尋</label>
+				<input type="checkbox" id="find" name="post_type" value="find">
+				<label for="find">拾獲</label>
+			</div>
+		</div>
+		<div class="form_div">
+			<div class="select_category">
+				<input type="checkbox" id="cat" name="select_category" value="cat">
+				<label for="cat">貓</label>
+				<input type="checkbox" id="dog" name="select_category" value="dog">
+				<label for="dog">狗</label>
+			</div>
+		</div>
+		<div class="form_div">
+		<select name="select_breed" multiple>
+			<option value="" disabled selected>依品種搜尋</option>
+			<optgroup label="狗">
+				<option value="米克斯">米克斯</option>
+				<option value="貴賓">貴賓</option>
+				<option value="柯基">柯基</option>
+				<option value="哈士奇">哈士奇</option>
+				<option value="黃金獵犬">黃金獵犬</option>
+				<option value="拉布拉多">拉布拉多</option>
+				<option value="柴犬">柴犬</option>
+				<option value="秋田">秋田</option>
+				<option value="古代牧羊犬">古代牧羊犬</option>
+			</optgroup>
+			<optgroup label="貓">
+				<option value="混種貓">混種貓</option>
+				<option value="摺耳貓">摺耳貓</option>
+				<option value="金吉拉">金吉拉</option>
+				<option value="波斯貓">波斯貓</option>
+				<option value="金吉拉">金吉拉</option>
+			</optgroup>
+		</select>
+		</div>
+		<div class="form_div">
+			<select name="select_color" multiple>
+				<option value="" disabled selected>依顏色搜尋</option>
+				<option value="黑">黑色</option>
+				<option value="白">白色</option>
+				<option value="咖啡">咖啡色</option>
+				<option value="灰">灰色</option>
+				<option value="橘">橘色</option>
+			</select>
+		</div>
+		<div class="form_div">
+			<div class="select_category">
+				<input type="checkbox" id="male" name="select_gender" value="male">
+				<label for="male">男</label>
+				<input type="checkbox" id="female" name="select_gender" value="female">
+				<label for="female">女</label>
+			</div>
+		</div>
+		<div class="form_div" id="address_input">
+			<input type="hidden" name="lost_address_lng"></input>
+			<input type="hidden" name="lost_address_lat"></input>
+			<input type="text" id="input_address" name="input_address" placeholder="依地點搜尋"></input></br>
+			<div id="error_message" style="color: red; display: none;">此輸入為無效地址!!!</div>
+		</div>
+		<label class="form_div choose_file">
+			<input type="file" id="image" name="image"></input>
+			<span id="upload_cover_image" style="Opacity: 0.7;"><img src="/images/photo.png"><div id="chose_picture">以照片搜尋</div></span>
+		</label>
+		<input id="submit" type="button" value="搜尋" style="width: 60px; height: 34px;">
+		</form>
+		<div id="image_result" style="text-align: center;"></div>
+	</div>
+	<div class="body">
+		<div class="post_container">
+		</div>
+		<div class="index_body">
+			<div class="pets" id="lost_pets"></div>
+		</div>
+	</div>
+	<footer style="background-color: rgba(0,0,0,0.7);"></footer>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&libraries=places"></script>
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/js/bootstrap-multiselect.js"></script>
+<script src="js/index.js"></script>
 </body>
 </html>
