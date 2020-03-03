@@ -1,0 +1,16 @@
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqPLiFTzh0Hn0piEvo_AGElKvHPlHO7SM&libraries=geometry"></script>
+<script>
+	var mark = [
+		{lat: 22.9904444, lng: 120.2043056},
+		{lat: 22.9929299, lng: 120.2008873},
+		{lat: 22.9899117, lng: 120.1979533},
+		{lat: 22.990087, lng: 120.2059868},
+		{lat: 22.9896681, lng: 120.2010486},
+		{lat: 22.987102, lng: 120.1973454},
+		{lat: 22.9917925, lng: 120.2025232}
+	];
+	var start = new google.maps.LatLng(mark[0]);
+	var end = new google.maps.LatLng(mark[1]);
+	var distance = google.maps.geometry.spherical.computeDistanceBetween(start, end);
+	console.log((distance/1000).toFixed(1) + ' km');
+</script>

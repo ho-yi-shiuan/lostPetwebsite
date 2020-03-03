@@ -1,48 +1,67 @@
 var user_id;
-function getCookie(name)
-{
-	var arr = document.cookie.match(new RegExp("(^| )"+name+"=([^;]*)(;|$)"));
-	if(arr != null){
-		return unescape(arr[2]);
-		
-	}return null;
-}
-function signout(){
-	var exp = new Date();
-	exp.setTime(exp.getTime() - 1);
-	var user_cookie = getCookie("user");
-	if(user_cookie!=null){
-		document.cookie = "user="+user_cookie+";expires="+exp.toGMTString();
-	}
-}
-var token;
-function getcookie()
-{
+function get_token(){
 	var cookies = document.cookie.split(";");
-	console.log(cookies);
 	for(i=0;i<cookies.length;i++)
 	{
 		var c = cookies[i].trim();//去空白
 		if(c.indexOf("user=") >= 0)//回傳找到的第一個
 		{
-			//找到user cookie, 直接拿token去登入, 回傳會員資料
 			token = c.substring(5,c.length);
-			console.log("前端cookie找到的token為: "+token);
-			return("2");
+			return(token);
 		}
 	}
 }
 
-var cookieresult = getcookie();
-if(cookieresult == "2")
+var token = get_token();
+
+if(token)
 {
-	get_lost();
+	get_lost("lost",["finding"],"profile_list_lost");
 }
 else{
 	document.location.href="/signin.html";
 }
-//google map code start
-console.log("開始執行map script");
+
+var autocomplete;
+window.addEventListener('load', () => {
+	var input = document.getElementById('input_address');
+	autocomplete = new google.maps.places.Autocomplete(input);
+	google.maps.event.addListener(autocomplete, 'place_changed', function() {
+		fill_address();
+	});
+});
+
+// 地址的輸入框，值有變動時執行
+function fill_address(){
+	var place = autocomplete.getPlace();
+	document.getElementsByName("lost_address_lng")[0].value = place.geometry.location.lng();
+	document.getElementsByName("lost_address_lat")[0].value = place.geometry.location.lat();
+};
+
+//存取目前位置
+function get_spot(){
+	navigator.geolocation.getCurrentPosition(function(position) {
+		document.getElementsByName("lost_address_lng")[0].value = position.coords.longitude;
+		document.getElementsByName("lost_address_lat")[0].value = position.coords.latitude;	
+		document.getElementById("input_address").value = "已存取目前位置";
+	});
+}
+
+document.getElementById("select_current_spot").addEventListener('click', function(){
+	document.getElementById("error_message").style = "display: none";
+	get_spot();
+});
+
+document.getElementById("submit_mark").addEventListener('click', function(){
+	if(document.getElementsByName("lost_address_lng")[0].value.length == 0){
+		//輸入地址且地址錯誤
+		document.getElementById("error_message").style = "color: white; display: block";
+	}else{
+		insert_mark();
+		document.getElementById("error_message").style = "display: none";
+	}
+});
+
 var map;
 function initMap() {
 	console.log("執行init map");
@@ -54,61 +73,20 @@ function initMap() {
 		  lng: 121.5647688
 		}
 	});
-}
-var autocomplete;
-window.addEventListener('load', () => {
-	var input = document.getElementById('input_address');
-	autocomplete = new google.maps.places.Autocomplete(input);
-	google.maps.event.addListener(autocomplete, 'place_changed', function() {
-		fillInAddress();
-	});		
-});
-// 地址的輸入框，值有變動時執行
-function fillInAddress(){
-	var place = autocomplete.getPlace();
-	console.log(place.geometry.location.lng());
-	console.log(place.formatted_address);
-	document.getElementsByName("lost_address_lng")[0].value = place.geometry.location.lng();
-	document.getElementsByName("lost_address_lat")[0].value = place.geometry.location.lat();
-};
-//存取目前位置code start
-document.getElementById("select_current_spot").addEventListener('click', function(){
-	document.getElementById("error_message").style = "display: none";
-	get_spot();
-});
-function get_spot(){
-	navigator.geolocation.getCurrentPosition(function(position) {
-		document.getElementsByName("lost_address_lng")[0].value = position.coords.longitude;
-		document.getElementsByName("lost_address_lat")[0].value = position.coords.latitude;	
-		document.getElementById("input_address").value = "已存取目前位置";
-	});
-}
-//存取目前位置code end
-document.getElementById("submit_mark").addEventListener('click', function(){
-	if(document.getElementsByName("lost_address_lng")[0].value.length == 0){
-		//輸入地址且地址錯誤
-		document.getElementById("error_message").style = "color: white; display: block";
-	}else{
-		insert_mark();
-		document.getElementById("error_message").style = "display: none";
-	}
-});
-function insert_mark(){
-	var user_mark = {
-		user_id: user_id,
-		insert_lng: document.getElementsByName("lost_address_lng")[0].value,
-		insert_lat: document.getElementsByName("lost_address_lat")[0].value,
-	}
-	console.log(user_mark);
-	$.ajax({
-		contentType :"application/json",
-		type: "POST",
-		url: "/user_mark",
-		data: JSON.stringify(user_mark),
-		success: function(res)
+	function insert_mark(){
+		var user_mark = {
+			user_id: user_id,
+			insert_lng: document.getElementsByName("lost_address_lng")[0].value,
+			insert_lat: document.getElementsByName("lost_address_lat")[0].value,
+		}
+		$.ajax({
+			contentType :"application/json",
+			type: "POST",
+			url: "/user_mark",
+			data: JSON.stringify(user_mark),
+			success: function(res)
 			{
 				document.getElementById("input_address").value = "";
-				console.log(res);
 				var location = res.location_lat+", "+res.location_lng;
 				geocoder.geocode( { 'address': location}, function(results, status) {
 					if (status == 'OK') {
@@ -129,43 +107,39 @@ function insert_mark(){
 					}
 				});
 			},
-		dataType: "json"
-	});
-};
-//googlt map code end
-function get_lost(){
+			error: function(err)
+			{
+				console.log(err.responseJSON.error);
+				alert(err.responseJSON.error);
+			},
+			dataType: "json"
+		});
+	};
+}
+
+function get_lost(list_type,lost_status,display_title){
 	var get_type = {
 		cookie: token,
-		list_type: "lost",
-		lost_status: ["finding"]			
+		list_type: list_type,
+		lost_status: lost_status		
 	};
-	document.getElementById("profile_list_find").style="";
-	document.getElementById("profile_list_lost_record").style="";
-	document.getElementById("profile_list_lost").style=" background-color: rgba(0,0,0,.5); border: 1px solid rgba(0,0,0,.25); color: white;";
+	change_title(display_title);
 	ajax_list(get_type);
 }
-function get_past_lost(){
+
+function change_title(display_title){
 	document.getElementById("profile_list_lost").style="";
 	document.getElementById("profile_list_find").style="";
-	document.getElementById("profile_list_lost_record").style="background-color: rgba(0,0,0,.5); border: 1px solid rgba(0,0,0,.25); color: white;";
-	var get_type = {
-		cookie: token,
-		list_type: "lost",
-		lost_status: ["end_found","end_unfound"]		
-	};
-	ajax_list(get_type);	
-}
-function get_find(){
-	document.getElementById("profile_list_lost").style="";
 	document.getElementById("profile_list_lost_record").style="";
-	document.getElementById("profile_list_find").style="background-color: rgba(0,0,0,.5); border: 1px solid rgba(0,0,0,.25); color: white;";
-	var get_type = {
-		cookie: token,
-		list_type: "find",
-		lost_status: ["finding"]		
-	};
-	ajax_list(get_type);	
+	document.getElementById(display_title).style=" background-color: rgba(0,0,0,.5); border: 1px solid rgba(0,0,0,.25); color: white;";
 }
+
+function signout(){
+	var exp = new Date();
+	exp.setTime(exp.getTime() - 1);
+	document.cookie = "expires="+exp.toGMTString();
+}
+
 function ajax_list(get_type){
 	$.ajax({
 		contentType :"application/json",
@@ -174,14 +148,13 @@ function ajax_list(get_type){
 		data: JSON.stringify(get_type),
 		success: function(res)
 		{
-			if(res.status == "expired"){
+			if(res.status == "token_expired"){
 				document.location.href = "/signin.html";
-			}else if(res.status == "wrong"){
+			}else if(res.status == "token_wrong"){
 				document.location.href = "/signin.html";
 			}else{
 				document.getElementsByClassName("nameline")[0].innerHTML = res.data.name;
 				document.getElementsByClassName("emailline")[0].innerHTML = res.data.email;
-				console.log(res);
 				user_id = res.data.id;
 				document.getElementsByClassName("user_lost_list")[0].innerHTML = "";
 				append_data(res.data.lost_pet);
@@ -213,18 +186,16 @@ function ajax_list(get_type){
 		},
 		error: function(err)
 		{
-			console.log(err);
+			console.log(err.responseJSON.error);
+			alert(err.responseJSON.error);
 		},
 		dataType: "json"
-		});	
+	});	
 }
+
 function append_data(res){
-	console.log(res);
 	if(res.length > 0){
 		for(i=0; i<res.length; i++){
-			// let divider = document.createElement("hr");
-			// divider.id = "divider";
-			// document.getElementsByClassName("user_lost_list")[0].appendChild(divider);
 			let profile_container = document.createElement("div");
 			profile_container.className = "profile_container";	
 			let profile_image_container = document.createElement("div");
@@ -498,6 +469,7 @@ function message_to_room(room_id){
 	let data = {
 		name: document.getElementsByClassName("nameline")[0].innerHTML,
 		content: document.getElementById("close_message"+room_id).value,
+		user_id: user_id
 	};
 	socket.emit('message_to_backend', data);
 	socket.on('redirect', function(obj){

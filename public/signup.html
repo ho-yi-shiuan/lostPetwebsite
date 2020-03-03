@@ -6,6 +6,9 @@
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <link rel=stylesheet type="text/css" href="./index.css">
 <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<title>陪你回家</title>
+<link rel="icon" href="/images/pet_logo.ico" type="image/x-icon"/>
+<link rel="shortcut icon" href="/images/pet_logo.ico" type="image/x-icon"/>
 </head>
 <body>
 <div id="signup_page">
@@ -32,57 +35,12 @@
 			<input type="text" id="name" style="font-size:15px" placeholder="請輸入姓名"></input></br>
 			<input type="text" id="email" style="font-size:15px" placeholder="請輸入信箱"></input></br>
 			<input type="password" id="password" style="font-size:15px" placeholder="請輸入密碼"></input></br>
-			<button id="submit" style="button" onclick="signup();">註冊</button></br>
-			<div id="fail"></div>
+			<button id="submit" style="button" onclick="signup_ajax();">註冊</button></br>
+			<div id="fail" style="text-align: center; color: red;"></div>
 			<div id="signin"><a href="signin.html" style="text-decoration: none; color: white;">會員登入</a></div>
 		</div>
 	</div>
-	<div class="success">
-		<div>註冊已成功, 資料如以下:</div></br>
-		<div class="nameline">姓名:<div id="successname"></div></div></br>
-		<div class="emailline">信箱:<div id="successemail"></div></div>
-	</div>
 </div>
-<script>
-function signup(){
-	var signup_data = {
-		name: document.getElementById("name").value,
-		email: document.getElementById("email").value,
-		password: document.getElementById("password").value
-	}
-	$.ajax({
-		contentType :"application/json",
-		type: "POST",
-		url: "/signup",
-		data: JSON.stringify(signup_data),
-		success: function(res)
-		{
-			console.log(res);
-			if(res == "3")
-			{
-				console.log("user exist")
-				document.getElementById("fail").innerHTML = "帳號已存在, 請至登入頁登入";
-				document.getElementsByClassName("success")[0].style.display = "none";
-				document.getElementById("fail").style.display = "block";				
-			}
-			else
-			{
-				console.log(res);
-				console.log("success");
-				document.location.href="profile.html";
-				//document.getElementById("successname").innerHTML = res.data.user.name;
-				//document.getElementById("successemail").innerHTML = res.data.user.email;
-				//document.getElementsByClassName("success")[0].style.display = "block";
-				//document.getElementById("fail").style.display = "none";
-			}
-		},
-		error: function(err)
-		{
-			console.log(err);
-		},
-		dataType: "json"
-		});	
-}
-</script>
+<script src="js/signup.js"></script>
 </body>
 </html>

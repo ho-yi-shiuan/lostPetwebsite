@@ -7,26 +7,21 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.post('/', async function(req, res){
-	console.log(req.body);
 	var user_mark = {
 		user_id: req.body.user_id,
 		location_lng: req.body.insert_lng,
 		location_lat: req.body.insert_lat
 	}
-//	const user_mark_promise = new Promise((resolve, reject) => {
-		mysql.con.query("INSERT into user_mark set?", user_mark, function(err, result){
-			if(err){
-				console.log(err);
-			}else{
-				console.log("insert user mark suscessfully!");
-				res.send(user_mark);
-			}
-		});
-	//})
-});
-
-app.get('/', async function(req, res){
-	
+	mysql.con.query("INSERT into user_mark set?", user_mark, function(err, result){
+		if(err){
+			console.log("error message of insert user mark in user_mark api: ");
+			console.log(err);
+			res.status(500).send({error:"Database query error, Please try later"});
+		}else{
+			console.log("insert user mark suscessfully!");
+			res.send(user_mark);
+		}
+	});
 });
 	
 module.exports = app;

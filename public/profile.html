@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 <link rel=stylesheet type="text/css" href="./index.css">
+<title>陪你回家</title>
+<link rel="icon" href="/images/pet_logo.ico" type="image/x-icon"/>
+<link rel="shortcut icon" href="/images/pet_logo.ico" type="image/x-icon"/>
 </head>
 <body>
 	<header>
@@ -53,11 +56,11 @@
 	<div class="user_lost_data">
 		<div id="profile_list_container">
 			<ul class="profile_list">
-				<li style="cursor: pointer;"><div id="profile_list_lost" onclick="get_lost()">協尋中寵物</div></li>
+				<li style="cursor: pointer;"><div id="profile_list_lost" onclick="get_lost('lost',['finding'],'profile_list_lost')">協尋中寵物</div></li>
 				<li>｜</li>
-				<li style="cursor: pointer;"><div id="profile_list_lost_record" onclick="get_past_lost()">過去協尋記錄</div></li>
+				<li style="cursor: pointer;"><div id="profile_list_lost_record" onclick="get_lost('lost',['end_found','end_unfound'],'profile_list_lost_record')">過去協尋記錄</div></li>
 				<li>｜</li>
-				<li style="cursor: pointer;"><div id="profile_list_find" onclick="get_find()">發現走失寵物記錄</div></li>
+				<li style="cursor: pointer;"><div id="profile_list_find" onclick="get_lost('find',['finding'],'profile_list_find')">發現走失寵物記錄</div></li>
 			</ul>
 		</div>
 		<hr id="lost_divider" style="width: 90%; margin: 20px auto;">
