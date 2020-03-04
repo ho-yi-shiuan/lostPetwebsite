@@ -165,7 +165,7 @@ app.post('/', upload.single('image'), async function(req, res){
 								resolve("finished");
 							}
 						}else{
-							//無error有比對到
+							//無error有比對到, 組成一個新的array 再把整個組裝api的function拉到外面寫
 							response.FaceMatches.forEach(data => {
 								let position   = data.Face.BoundingBox
 								let similarity = data.Similarity
@@ -252,7 +252,7 @@ app.post('/', upload.single('image'), async function(req, res){
 					unmatch_lost_record_array.push(lost_data_object);
 					console.log(i+" : push to unmatch");
 				};
-				var data = {
+				var data = { 
 					data:unmatch_lost_record_array,
 					image_compare: "no_matched"
 				}

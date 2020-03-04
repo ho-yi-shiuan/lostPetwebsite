@@ -1,18 +1,12 @@
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 var mysql = require("../mysqlcon.js");
+var user = require('../model/user');
 var express = require("express");
 var bodyParser = require('body-parser');
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
-function createtoken(email){
-	let hash = crypto.createHash('sha256');
-	hash.update(email);
-	const token = hash.digest('hex');
-	return token;
-}
 
 app.post('/', async function(req, result){
 	if(req.body.provider == "native"){
@@ -20,54 +14,28 @@ app.post('/', async function(req, result){
 			result.status(400).send({error:"Permissions Error: email, password are required."});
 			return;
 		}
-		mysql.con.beginTransaction( async function(error){
-			if(error){
-				reject("Database Query Error");
-				return;
-			}
-			var select_query = "SELECT * FROM user WHERE email = \"" + req.body.email +"\"";
-			const user_promise = new Promise((resolve, reject) => {
-				mysql.con.query(select_query,function(err, res){
-					if(err){
-						console.log("error message of select user email in signin api: ");
-						console.log(err);
-						result.status(500).send({error:"Database Query Error"});
-						return mysql.con.rollback(function(){
-							throw err;
-						});
-					}else
-					{
-						console.log("select user email in signin api: 已找出資料庫內目前密碼");
-						resolve(res);
-					}
+		mysql.con.beginTransaction(async function(error){
+			try{
+				let user_data = await user.select_user_email(req.body.email);
+				const password_promise = new Promise((resolve, reject) => {
+					resolve(bcrypt.compare(req.body.password, user_data[0].password));
 				});
-			});
-			let user_data = await user_promise;
-			bcrypt.compare(req.body.password, user_data[0].password).then(function(res){
-				if(res){
+				let psw = await password_promise;
+				if(psw){
 					//製造新token
 					var date = Date.now();
 					var time = 3600000;
 					var expire = parseInt(date+time);
-					token = createtoken(req.body.email+date);
+					token = user.create_token(req.body.email+date);
 					//更新mysql內的token
-					var update_query = "update user set access_token = \""+token+"\", access_expired = \""+expire+"\" where id = "+user_data[0].id+";";
-					mysql.con.query(update_query, function(err, res){
-						if(err){
-							console.log("error message of update user data in signin api: ");
-							console.log(err);
-							result.status(500).send({error:"Database Query Error"});
-							return mysql.con.rollback(function(){
-								throw error;
-							});
-						}
-						console.log("update user data in signin api: 登入(native), 更新token成功");
+					let new_token = {
+						access_token:token,
+						access_expired:expire
+					}
+					await user.update_user(new_token,user_data[0].id).then(function(){
 						mysql.con.commit(function(error){
 							if(error){
-								result.status(500).send({error:"Database Query Error"});
-								return mysql.con.rollback(function(){
-									throw error;
-								});
+								throw error;
 							}
 							//輸出
 							var user_information = {
@@ -87,7 +55,7 @@ app.post('/', async function(req, result){
 							};
 							result.cookie("user",token);
 							result.send(list);
-						});
+						});						
 					})
 				}else{
 					console.log("signin api: 登入(native), 帳密不符合");
@@ -95,7 +63,13 @@ app.post('/', async function(req, result){
 						result.end("2");
 					});
 				}
-			});
+			}catch(error){
+				console.log("catched error");
+				console.log(error);
+				return mysql.con.rollback(function(){
+					result.status(500).send({error:"Database Query Error"});
+				});				
+			}
 		})
 	}else if(req.body.provider == "facebook"){
 		if(!req.body.email||!req.body.name){
@@ -104,106 +78,65 @@ app.post('/', async function(req, result){
 		}
 		//以fb登入
 		mysql.con.beginTransaction( async function(error){
-			if(error){
-				reject("Database Query Error");
-				return;
-			}
-			var search_data = "select * from user where email = \""+req.body.email+"\";";
-			const check_promise = new Promise((resolve, reject) => {
-				mysql.con.query(search_data, function(err, res){
-					if(err){
-						console.log("error message in signin api(facebook): 找出是否已註冊過");
-						console.log(err);
-						result.status(500).send({error:"Database Query Error"});
-						return mysql.con.rollback(function(){
-							throw error;
-						});
-					}else{
-						//已註冊, 找出其他資訊
-						console.log("signin api(facebook): select user facebook login history successful!");
-						resolve(res);
+			try{
+				let user_data = await user.select_user_email(req.body.email);
+				if(user_data.length == 0){//沒有註冊過, 註冊資料
+					//製造token
+					var date = Date.now();
+					token = createtoken(req.body.email+date);
+					var time = 3600000;
+					var expire = parseInt(date+time);
+					var new_data = {
+						provider: "facebook",
+						email: req.body.email,
+						name: req.body.name,
+						picture: req.body.picture,
+						access_token: token,
+						access_expired: expire
 					}
-				});
-			})
-			let user_data = await check_promise;
-			if(user_data.length == 0){//沒有註冊過, 註冊資料
-				//製造token
-				var date = Date.now();
-				token = createtoken(req.body.email+date);
-				var time = 3600000;
-				var expire = parseInt(date+time);
-				var new_data = {
-					provider: "facebook",
-					email: req.body.email,
-					name: req.body.name,
-					picture: req.body.picture,
-					access_token: token,
-					access_expired: expire
+					await insert_user(new_data).then(function(res){
+						mysql.con.commit(function(error){
+							if(error){
+								throw error;
+							}
+							var user_information = {
+								id: res.insertId,
+								procider: "facebook",
+								name: new_data.name,
+								email: new_data.email,
+								picture: new_data.picture
+							};		
+							var data = {
+								access_token: token,
+								access_expired: expire,
+								user: user_information
+							};
+							var list = {
+								data: data
+							};
+							result.cookie("user",token);
+							result.send(list);						
+						});						
+					})
 				}
-				mysql.con.query("INSERT INTO user SET?", new_data, function(err, res){
-					if(err){
-						console.log("error message in signin api(facebook): 無註冊過, 新增會員資料");
-						console.log(err);
-						res.status(500).send({error:"Database Query Error"});
-						return mysql.con.rollback(function(){
-							throw error;
-						});
+				else if(user_data.length > 0){//已註冊, 找出其他資訊
+					//製造新token
+					var date = Date.now();
+					var time = 3600000;
+					var expire = parseInt(date+time);
+					token = createtoken(req.body.email+date);
+					//更新mysql內的token
+					var new_data = {
+						provider: "facebook",
+						name: req.body.name,
+						picture: req.body.picture,
+						access_token: token,
+						access_expired: expire
 					}
-					mysql.con.commit(function(error){
+					await user.update_user(new_data,user_data[0].id).then(function(){
 						if(error){
-							reject("Database Query Error: "+erorr);
-							return mysql.con.rollback(function(){});
-						}
-						console.log("signin api(facebook): 無註冊過, 新增 user 成功");
-						var user_information = {
-							id: res.insertId,
-							procider: "facebook",
-							name: new_data.name,
-							email: new_data.email,
-							picture: new_data.picture
-						};		
-						var data = {
-							access_token: token,
-							access_expired: expire,
-							user: user_information
-						};
-						var list = {
-							data: data
-						};
-						result.cookie("user",token);
-						result.send(list);						
-					});
-				})
-			}
-			else if(user_data.length > 0){//已註冊, 找出其他資訊
-				//製造新token
-				var date = Date.now();
-				var time = 3600000;
-				var expire = parseInt(date+time);
-				token = createtoken(req.body.email+date);
-				//更新mysql內的token
-				var new_data = {
-					provider: "facebook",
-					name: req.body.name,
-					picture: req.body.picture,
-					access_token: token,
-					access_expired: expire
-				}
-				mysql.con.query("UPDATE user SET? WHERE email = ?", [new_data, req.body.email], function(err, res){
-					if(err){
-						console.log("error message in signin api(facebook): 已註冊過, 更新會員資料");
-						console.log(err);
-						result.status(500).send({error:"Database Query Error"});
-						return mysql.con.rollback(function(){
 							throw error;
-						});
-					}
-					mysql.con.commit(function(error){
-						if(error){
-							reject("Database Query Error: "+erorr);
-							return mysql.con.rollback(function(){});
 						}
-						console.log("signin api(facebook): 已註冊過, 更新 user 成功");
 						var user_information = {
 							id: user_data[0].id,
 							provider: "facebook",
@@ -220,13 +153,17 @@ app.post('/', async function(req, result){
 							data: data
 						};
 						result.cookie("user",token);
-						result.send(list);		
+						result.send(list);
+					})
+				}else{
+					return mysql.con.rollback(function(){
+						result.send("please enter provider");
 					});
-				})
-			}else{
+				}				
+			}catch(error){
 				return mysql.con.rollback(function(){
-					result.send("please enter provider");
-				});
+					result.status(500).send({error:"Database Query Error"});
+				});				
 			}
 		})
 	}
