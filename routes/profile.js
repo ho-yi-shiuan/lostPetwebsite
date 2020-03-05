@@ -31,7 +31,7 @@ app.post("/", async function(req, res){
 					if(error){
 						throw error;
 					}
-					var mark_array = [];
+					let mark_array = [];
 					for(k=0; k<result.length; k++){
 						let location_mark = result[k].location_lat+", "+result[k].location_lng;
 						mark_array.push(location_mark);

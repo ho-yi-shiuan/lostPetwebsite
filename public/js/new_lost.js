@@ -92,6 +92,7 @@ if(cookieresult == "2")
 		error: function(err)
 		{
 			console.log(err);
+			alert(err.responseJSON.error);
 		},
 		dataType: "json"
 		});

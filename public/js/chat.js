@@ -92,6 +92,7 @@ if(cookieresult == "2")
 		error: function(err)
 		{
 			console.log(err);
+			alert(err.responseJSON.error);
 		},
 		dataType: "json"
 		});
@@ -254,6 +255,9 @@ const xhr = new XMLHttpRequest();
 var url = "/lost_detail?id="+id;
 xhr.open("get", url);
 xhr.onload = async function(){
+	if (xhr.status == 500) {
+		alert("Database Query Error");		
+	}
 	var detail = JSON.parse(this.response);
 	console.log(detail);
 	document.getElementById("post_title").innerHTML = detail.title;
@@ -648,27 +652,32 @@ function insert_mark(){
 		url: "/lost_mark",
 		data: JSON.stringify(new_mark),
 		success: function(res)
-			{
-				document.getElementById("insert_mark").value = "";
-				insert_info:document.getElementById("insert_info").value = "";
-				geocoder.geocode( { 'address': res.location}, function(results, status) {
-					if (status == 'OK') {
-						var marker = new google.maps.Marker({
-							map: map,
-							position: results[0].geometry.location,
-							icon: '/images/pin.png'
-						});
-						var infowindow = new google.maps.InfoWindow({
-							content: res.description
-						});
-						marker.addListener('click', function() {
-							infowindow.open(map, marker);
-						});
-					} else {
-						console.log("地址轉換成經緯度: "+status);
-					}
-				});
-			},
+		{
+			document.getElementById("insert_mark").value = "";
+			insert_info:document.getElementById("insert_info").value = "";
+			geocoder.geocode( { 'address': res.location}, function(results, status) {
+				if (status == 'OK') {
+					var marker = new google.maps.Marker({
+						map: map,
+						position: results[0].geometry.location,
+						icon: '/images/pin.png'
+					});
+					var infowindow = new google.maps.InfoWindow({
+						content: res.description
+					});
+					marker.addListener('click', function() {
+						infowindow.open(map, marker);
+					});
+				} else {
+					console.log("地址轉換成經緯度: "+status);
+				}
+			});
+		},
+		error: function(err)
+		{
+			console.log(err);
+			alert(err.responseJSON.error);
+		},
 		dataType: "json"
 		});
 }

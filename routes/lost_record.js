@@ -25,8 +25,9 @@ var upload = multer({
 
 app.post('/', upload.single('image'), async function(req, res){
 	//統一輸入顏色
+	let color_array;
 	if(req.body.pet_color.length > 0){
-		var color_array = req.body.pet_color.split(/[ ,]+/);	
+		color_array = req.body.pet_color.split(/[ ,]+/);	
 		for(let i=0; i<color_array.length; i++){
 			if(color_array[i].indexOf("色") >= 0){
 				var new_element = color_array[i].substring(0, color_array[i].length-1);
@@ -59,7 +60,6 @@ app.post('/', upload.single('image'), async function(req, res){
 			lost_data_id = result.insertId;
 			return lost_data.create_socket_table(lost_data_id);
 		}).then(async function(){
-			res.redirect("/");
 			if(req.body.post_type == "lost"){
 				//find near user of lost/find address
 				let near_user = await lost_data.select_near_user(req.body.lost_address_lng,req.body.lost_address_lat);
@@ -83,13 +83,13 @@ app.post('/', upload.single('image'), async function(req, res){
 						lost_data.insert_message(insert_message);
 					}
 				}
-				condition_array = [['find']];
+				init_condition_array = [['find']];
 			}else if(req.body.post_type == "find"){
-				//find current find post which corresspond to lost pet's feature
-				condition_array = [['lost']];
+				init_condition_array = [['lost']];
 			}
-			let compare_query = 
-			let condition_array = 
+			//find current find post which corresspond to lost pet's feature and send message to their profile page
+			let compare_query = create_compare_query(req.body,color_array);
+			let condition_array = create_compare_array(req.body,init_condition_array);
 			lost_data.select_post(compare_query,condition_array).then(function(result){
 				let insert_message = {
 					send_id: 0,
@@ -121,6 +121,7 @@ app.post('/', upload.single('image'), async function(req, res){
 					}					
 				}
 			})
+			res.redirect("/");
 		})		
 	}catch(error){
 		console.log(error);
@@ -129,88 +130,98 @@ app.post('/', upload.single('image'), async function(req, res){
 });
 
 app.get('/', async function(req, res){
-	var picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/";
+	let picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/";
 	if(req.query.post_type){
-		var select_lost_record = "SELECT * from lost_pet where lost_status = \""+req.query.lost_status+"\" AND post_type = \""+req.query.post_type+"\";";			
+		select_lost_record = "SELECT * from lost_pet where lost_status = \""+req.query.lost_status+"\" AND post_type = \""+req.query.post_type+"\";";			
 	}else{
-		var select_lost_record = "SELECT * from lost_pet where lost_status = \""+req.query.lost_status+"\" ;"		
+		select_lost_record = "SELECT * from lost_pet where lost_status = \""+req.query.lost_status+"\" ;"		
 	}
-	const lost_record_promise = new Promise((resolve, reject) => {
-		mysql.con.query(select_lost_record, function(err, result){
-			if(err){
-				console.log("lost_record api(get): \n");
-				console.log(err);
-			}else{
-				resolve(result);
+	try{
+		let lost_record = await lost_data.get_all_lost(select_lost_record);
+		let lost_record_array = [];
+		let lost_data_object;
+		for(i=0; i<lost_record.length; i++){
+			lost_data_object = {
+				id: lost_record[i].pet_id,
+				name: lost_record[i].pet_name,
+				picture: picture_s3_url+lost_record[i].pet_picture,
+				gender: lost_record[i].gender,
+				age: lost_record[i].age,
+				breed: lost_record[i].breed,
+				color: lost_record[i].color,
+				lost_location: lost_record[i].lost_location,
+				lost_location_lng: lost_record[i].lost_location_lng,
+				lost_location_lat: lost_record[i].lost_location_lat,
+				lost_time: lost_record[i].lost_time,
+				lost_status: lost_record[i].lost_status,
+				post_type: lost_record[i].post_type,
+				title: lost_record[i].title,
+				content: lost_record[i].content
 			}
-		});
-	})
-	let lost_record = await lost_record_promise;
-	var lost_record_array = [];
-	for(i=0; i<lost_record.length; i++){
-		var lost_data_object = {
-			id: lost_record[i].pet_id,
-			name: lost_record[i].pet_name,
-			picture: picture_s3_url+lost_record[i].pet_picture,
-			gender: lost_record[i].gender,
-			age: lost_record[i].age,
-			breed: lost_record[i].breed,
-			color: lost_record[i].color,
-			lost_location: lost_record[i].lost_location,
-			lost_location_lng: lost_record[i].lost_location_lng,
-			lost_location_lat: lost_record[i].lost_location_lat,
-			lost_time: lost_record[i].lost_time,
-			lost_status: lost_record[i].lost_status,
-			post_type: lost_record[i].post_type,
-			title: lost_record[i].title,
-			content: lost_record[i].content
+			lost_record_array.push(lost_data_object);
+		};
+		let data = {
+			data:lost_record_array
 		}
-		lost_record_array.push(lost_data_object);
-	};
-	var data = {
-		data:lost_record_array
+		res.json(data);		
+	}catch(error){
+		console.log(error);
+		res.status(500).send({error:"Database Query Error"});		
 	}
-	res.json(data);
 });
 
-//拆成 category_query 跟 condition_array 各一支 function
-let query_array = [];
-if(req.body.category){
-	let category_query = " category in (?)";
-	query_array.push(category_query);
-	condition_array.push([req.body.category]);
-}
-if(req.body.pet_gender){
-	let gender_query = " gender in (?)";
-	query_array.push(gender_query);
-	condition_array.push([req.body.pet_gender]);
-}
-if(req.body.pet_breed){
-	let pet_breed_query = " breed in (?)";
-	query_array.push(pet_breed_query);
-	condition_array.push([req.body.pet_breed]);
-}
-let color_query = " (";			
-for(let i=0; i<color_array.length; i++){
-		color_query += "color LIKE '%"+color_array[i]+"%'";
-		if(i <color_array.length-1){
-			color_query += " OR ";
+function create_compare_query(body, color_array){
+	//拆成 category_query 跟 condition_array 各一支 function
+	let query_array = [];
+	if(body.category){
+		let category_query = " category in (?)";
+		query_array.push(category_query);
+	}
+	if(body.pet_gender){
+		let gender_query = " gender in (?)";
+		query_array.push(gender_query);
+	}
+	if(body.pet_breed){
+		let pet_breed_query = " breed in (?)";
+		query_array.push(pet_breed_query);
+	}
+	let color_query = " (";			
+	for(let i=0; i<color_array.length; i++){
+			color_query += "color LIKE '%"+color_array[i]+"%'";
+			if(i <color_array.length-1){
+				color_query += " OR ";
+			}
+		}
+	color_query += ")";
+	query_array.push(color_query);
+	if(body.lost_address_lng){
+		query_array.push(" lost_location_lng BETWEEN "+body.lost_address_lng+"-0.05 AND "+body.lost_address_lng+"+0.05 AND lost_location_lat BETWEEN "+body.lost_address_lat+"-0.05 AND "+body.lost_address_lat+"+0.05");
+	}
+	let compare_query = "SELECT * from lost_pet WHERE post_type in (?)";
+	if(query_array.length >0){
+		compare_query += " AND";
+		for(let i=0; i<query_array.length; i++){
+			compare_query += query_array[i];
+			if(i < query_array.length-1){
+				compare_query += " AND";
+			}
 		}
 	}
-color_query += ")";
-query_array.push(color_query);
-if(req.body.lost_address_lng){
-	query_array.push(" lost_location_lng BETWEEN "+req.body.lost_address_lng+"-0.05 AND "+req.body.lost_address_lng+"+0.05 AND lost_location_lat BETWEEN "+req.body.lost_address_lat+"-0.05 AND "+req.body.lost_address_lat+"+0.05");
+	return compare_query;
 }
-let compare_query = "SELECT * from lost_pet WHERE post_type in (?)";
-if(query_array.length >0){
-	compare_query += " AND";
-	for(let i=0; i<query_array.length; i++){
-		compare_query += query_array[i];
-		if(i < query_array.length-1){
-			compare_query += " AND";
-		}
+
+function create_compare_array(body, init_array){
+	//拆成 category_query 跟 condition_array 各一支 function
+	if(body.category){
+		init_array.push([body.category]);
 	}
-}
+	if(body.pet_gender){
+		init_array.push([body.pet_gender]);
+	}
+	if(body.pet_breed){
+		init_array.push([body.pet_breed]);
+	}
+	return init_array;
+};
 
 module.exports = app;

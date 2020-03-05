@@ -25,95 +25,12 @@ var upload = multer({
 })
 
 app.post('/', upload.single('image'), async function(req, res){
-	//篩選
-	var select_array = [];
-	var body_array = [];
-	var condition_array = [];
-	if(typeof(req.body.lost_status) == "object"){
-		let lost_status_body = " lost_status in (?)";
-		condition_array.push(req.body.lost_status);
-		select_array.push(lost_status_body);
-	}else if(typeof(req.body.lost_status) == "string"){
-		let lost_status_body = " lost_status in (?)";
-		condition_array.push([req.body.lost_status]);
-		select_array.push(lost_status_body);
-	}
-	if(typeof(req.body.post_type) == "object"){
-		let post_type_body = " post_type in (?)";
-		condition_array.push(req.body.post_type);
-		select_array.push(post_type_body);
-	}else if(typeof(req.body.post_type) == "string"){
-		let post_type_body = " post_type in (?)";
-		condition_array.push([req.body.post_type]);
-		select_array.push(post_type_body);
-	}
-	if(typeof(req.body.select_category) == "object"){
-		let category_body = " category in (?)";
-		condition_array.push(req.body.select_category);
-		select_array.push(category_body);
-	}else if(typeof(req.body.select_category) == "string"){
-		let category_body = " category in (?)";
-		condition_array.push([req.body.select_category]);
-		select_array.push(category_body);
-	}
-	if(typeof(req.body.select_breed) == "object"){
-		let breed_body = " breed in (?)";
-		condition_array.push(req.body.select_breed);
-		select_array.push(breed_body);
-	}else if(typeof(req.body.select_breed) == "string"){
-		let breed_body = " breed in (?)";
-		condition_array.push([req.body.select_breed]);
-		select_array.push(breed_body);
-	}
-	if(typeof(req.body.select_gender) == "object"){
-		let gender_body = " (gender is null or gender in (?))";
-		condition_array.push(req.body.select_gender);
-		select_array.push(gender_body);
-	}else if(typeof(req.body.select_gender) == "string"){
-		let gender_body = " (gender is null or gender in (?))";
-		condition_array.push([req.body.select_gender]);
-		select_array.push(gender_body);
-	}
-	//地址篩經緯度
-	if(req.body.lost_address_lng){
-		select_array.push(" lost_location_lng BETWEEN "+req.body.lost_address_lng+"-0.05 AND "+req.body.lost_address_lng+"+0.05 AND lost_location_lat BETWEEN "+req.body.lost_address_lat+"-0.05 AND "+req.body.lost_address_lat+"+0.05");
-	}
-	//顏色where color like '%黑%' OR '%白%'
-	if(typeof(req.body.select_color) == "object"){
-		var color_body = "";
-		color_body += " (";
-		for(let j=0; j<req.body.select_color.length; j++){
-			color_body += "color LIKE '%"+req.body.select_color[j]+"%'";
-			if(j <req.body.select_color.length-1){
-				color_body += " OR ";
-			}
-		}
-		color_body += ")";
-		select_array.push(color_body);
-	}else if(typeof(req.body.select_color) == "string"){
-		select_array.push(" color LIKE '%"+req.body.select_color+"%'");
-	}
-	
-	var select_body = "SELECT * from lost_pet WHERE lost_status = \"finding\" ";
-	if(select_array.length >0){
-		for(let i=0; i<select_array.length; i++){
-			select_body += " AND";
-			select_body += select_array[i];
-		}
-	}
-	const lost_record_promise = new Promise((resolve, reject) => {
-	mysql.con.query(select_body, condition_array, function(err, result){
-			if(err){
-				console.log("error message of select by text condition in search api: ");
-				console.log(err);
-				result.status(500).send({error:"Database query error, please try later"});
-			}else{
-				console.log("select by text condition in search api: success");
-				resolve(result);
-			}
-		});
+	let picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/";
+	let select_body = create_query(req.body);
+	let condition_array = create_query(req.body);
+	select_post(select_body,condition_array).then(function(lost_record){
+		
 	})
-	let lost_record = await lost_record_promise;
 	//以上為純文字篩選結果, 要抓他們的圖片名稱去比對
 	if(req.file){
 		var matched_array = [];
@@ -187,7 +104,7 @@ app.post('/', upload.single('image'), async function(req, res){
 		image_compare_promise.then(function(){
 			console.log(matched_array);
 			if(matched_array.length > 0 ){
-				var picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/";
+				//組成新array, 跟else合併
 				var matched_lost_record_array = [];
 				for(let i=0; i<lost_record.length; i++){
 					if(lost_record[i].image_compare_result == "match"){
@@ -228,7 +145,6 @@ app.post('/', upload.single('image'), async function(req, res){
 				console.log(data);
 				res.json(data);	
 			}else{
-				var picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/";
 				var unmatch_lost_record_array = [];
 				for(let i=0; i<lost_record.length; i++){
 					var lost_data_object = {
@@ -270,7 +186,6 @@ app.post('/', upload.single('image'), async function(req, res){
 		})	
 	}else{
 		console.log("search without file");
-		var picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/";
 		let lost_record_array = [];
 		for(let i=0; i<lost_record.length; i++){
 			var lost_data_object = {
@@ -310,5 +225,86 @@ app.post('/', upload.single('image'), async function(req, res){
 		res.json(data);		
 	}
 });
+
+function create_query(body){
+	let select_array = [];
+	if(body.lost_status){
+		let lost_status_body = " lost_status in (?)";
+		select_array.push(lost_status_body);
+	}
+	if(body.post_type){
+		let post_type_body = " post_type in (?)";
+		select_array.push(post_type_body);
+	}
+	if(body.select_category){
+		let category_body = " category in (?)";
+		select_array.push(category_body);
+	}
+	if(body.select_breed){
+		let breed_body = " breed in (?)";
+		select_array.push(breed_body);
+	}
+	if(body.select_gender){
+		let gender_body = " (gender is null or gender in (?))";
+		select_array.push(gender_body);
+	}
+	//地址篩經緯度
+	if(body.lost_address_lng){
+		select_array.push(" lost_location_lng BETWEEN "+body.lost_address_lng+"-0.05 AND "+body.lost_address_lng+"+0.05 AND lost_location_lat BETWEEN "+body.lost_address_lat+"-0.05 AND "+body.lost_address_lat+"+0.05");
+	}
+	//顏色where color like '%黑%' OR '%白%'
+	if(typeof(body.select_color) == "object"){
+		let color_body = "";
+		color_body += " (";
+		for(let j=0; j<body.select_color.length; j++){
+			color_body += "color LIKE '%"+body.select_color[j]+"%'";
+			if(j <body.select_color.length-1){
+				color_body += " OR ";
+			}
+		}
+		color_body += ")";
+		select_array.push(color_body);
+	}else if(typeof(body.select_color) == "string"){
+		select_array.push(" color LIKE '%"+body.select_color+"%'");
+	}
+	let select_body = "SELECT * from lost_pet WHERE lost_status = \"finding\" ";
+	if(select_array.length >0){
+		for(let i=0; i<select_array.length; i++){
+			select_body += " AND";
+			select_body += select_array[i];
+		}
+	}
+	return select_body;
+};
+
+function create_query_array(body){
+	var condition_array = [];
+	if(typeof(body.lost_status) == "object"){
+		condition_array.push(body.lost_status);
+	}else if(typeof(body.lost_status) == "string"){
+		condition_array.push([body.lost_status]);
+	}
+	if(typeof(body.post_type) == "object"){
+		condition_array.push(body.post_type);
+	}else if(typeof(body.post_type) == "string"){
+		condition_array.push([body.post_type]);
+	}
+	if(typeof(body.select_category) == "object"){
+		condition_array.push(body.select_category);
+	}else if(typeof(body.select_category) == "string"){
+		condition_array.push([body.select_category]);
+	}
+	if(typeof(body.select_breed) == "object"){
+		condition_array.push(body.select_breed);
+	}else if(typeof(body.select_breed) == "string"){
+		condition_array.push([body.select_breed]);
+	}
+	if(typeof(body.select_gender) == "object"){
+		condition_array.push(body.select_gender);
+	}else if(typeof(body.select_gender) == "string"){
+		condition_array.push([body.select_gender]);
+	}
+	return condition_array;
+};
 	
 module.exports = app;

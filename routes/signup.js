@@ -20,10 +20,10 @@ app.post('/', async function(req, res){
 			if(flag.length == 0){
 				//開始註冊
 				//製造token
-				var date = Date.now();
+				let date = Date.now();
 				token = user.create_token(req.body.email+date);
-				var time = 3600000;
-				var expire = parseInt(date+time);
+				let time = 3600000;
+				let expire = parseInt(date+time);
 				//加密password
 				const salt_rounds = 10;
 				const bcrypt_promise = new Promise((resolve, reject) => {
@@ -31,7 +31,7 @@ app.post('/', async function(req, res){
 					resolve(hash);
 				})
 				let bcrypt_password = await user.bcrypt_promise;
-				var signup_data = {
+				let signup_data = {
 					provider: "native",
 					email: req.body.email,
 					password: bcrypt_password,
@@ -45,19 +45,19 @@ app.post('/', async function(req, res){
 						if(error){
 							throw error;
 						}
-						var user_information = {
+						let user_information = {
 							id: result.insertId,
 							provider: signup_data.provider,
 							email: signup_data.email,			
 							name: signup_data.name,
 							picture: signup_data.picture
 						};
-						var data = {
+						let data = {
 							access_token: token,
 							access_expired: expire,
 							user: user_information
 						};
-						var list = {
+						let list = {
 							data: data
 						};
 						res.cookie("user",token);

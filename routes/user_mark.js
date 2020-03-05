@@ -7,7 +7,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.post('/', async function(req, res){
-	var user_mark = {
+	let user_mark = {
 		user_id: req.body.user_id,
 		location_lng: req.body.insert_lng,
 		location_lat: req.body.insert_lat

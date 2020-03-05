@@ -120,6 +120,16 @@ module.exports = {
 		})
 	},
 	
-	
-
+	get_all_lost: function(query){
+		return new Promise((resolve, reject) => {
+			mysql.con.query(query, function(error, result){
+				if(error){
+					console.log("error message in select all lost data in lost record api: ");
+					reject(error);
+				}else{
+					resolve(result);
+				}
+			});
+		})
+	}
 };

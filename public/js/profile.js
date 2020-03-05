@@ -388,7 +388,7 @@ function append_message(message){
 			send_time.className = "send_time";
 			var message_time = document.createTextNode(moment(message[j].send_time).format('YYYY-MM-DD'));
 			send_time.appendChild(message_time);
-			document.getElementsByClassName("message_time")[0].appendChild(send_time);
+			document.getElementById("message_time_list").appendChild(send_time);
 			var content = document.createElement("div");
 			content.className = "send_content";
 			content.style = "text-align: center";
@@ -400,9 +400,9 @@ function append_message(message){
 				content_link.href = "/room?id="+message[j].link_id;
 				content_link.style = "text-decoration: none; color: black; text-align: center";
 				content_link.appendChild(content);
-				document.getElementsByClassName("message_content")[0].appendChild(content_link);			
+				document.getElementById("message_content_list").appendChild(content_link);			
 			}else{
-				document.getElementsByClassName("message_content")[0].appendChild(content);
+				document.getElementById("message_content_list").appendChild(content);
 			}				
 		}
 		//剩下display none
@@ -412,7 +412,7 @@ function append_message(message){
 			var message_time = document.createTextNode(moment(message[j].send_time).format('YYYY-MM-DD'));
 			send_time.appendChild(message_time);
 			send_time.style = "display: none;";
-			document.getElementsByClassName("message_time")[0].appendChild(send_time);
+			document.getElementById("message_time_list").appendChild(send_time);
 			var content = document.createElement("div");
 			content.className = "send_content";
 			content.style = "text-align: center;";
@@ -424,10 +424,10 @@ function append_message(message){
 				content_link.href = "/room?id="+message[j].link_id;
 				content_link.style = "text-decoration: none; color: black; text-align: center; display: none;";
 				content_link.appendChild(content);
-				document.getElementsByClassName("message_content")[0].appendChild(content_link);			
+				document.getElementById("message_content_list").appendChild(content_link);			
 			}else{
 				content.style = "display: none;";
-				document.getElementsByClassName("message_content")[0].appendChild(content);
+				document.getElementById("message_content_list").appendChild(content);
 			}					
 		}
 		//加一個div, 按下去會把剩下的顯示出來
@@ -441,7 +441,7 @@ function append_message(message){
 			for(i=0; i<message.length; i++){
 				document.getElementsByClassName("send_time")[i].style = "display: block;";				
 				document.getElementsByClassName("send_content")[i].style = "text-align: center;";
-				document.getElementsByClassName("message_link")[i].style = "text-decoration: none; color: white; text-align: center;";
+				document.getElementsByClassName("message_link")[i].style = "text-decoration: none; color: black; text-align: center;";
 			}
 		});	
 	}

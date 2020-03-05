@@ -11,14 +11,14 @@ app.get('/', async function(req, res){
 	try{
 		let lost_detail = await lost_data.select_lost_detail(req.query.id);
 		let map = await lost_data.select_map(req.query.id);		
-		var markers = [];
+		let markers = [];
 		for(i=0; i<map.length; i++){
 			markers.push({
 				marker_location: map[i].location,
 				marker_description: map[i].description
 			});
 		}
-		var data = {
+		let data = {
 			id: lost_detail[0].pet_id,
 			name: lost_detail[0].pet_name,
 			picture: picture_s3_url+lost_detail[0].pet_picture,

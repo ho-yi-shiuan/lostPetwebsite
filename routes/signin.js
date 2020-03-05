@@ -9,6 +9,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.post('/', async function(req, result){
+	//製造新token
+	let date = Date.now();
+	let time = 3600000;
+	let expire = parseInt(date+time);
+	let token = user.create_token(req.body.email+date);
 	if(req.body.provider == "native"){
 		if(!req.body.email||!req.body.password){
 			result.status(400).send({error:"Permissions Error: email, password are required."});
@@ -22,11 +27,6 @@ app.post('/', async function(req, result){
 				});
 				let psw = await password_promise;
 				if(psw){
-					//製造新token
-					var date = Date.now();
-					var time = 3600000;
-					var expire = parseInt(date+time);
-					token = user.create_token(req.body.email+date);
 					//更新mysql內的token
 					let new_token = {
 						access_token:token,
@@ -38,19 +38,19 @@ app.post('/', async function(req, result){
 								throw error;
 							}
 							//輸出
-							var user_information = {
+							let user_information = {
 								id: user_data[0].id,
 								procider: "native",
 								name: user_data[0].name,
 								email: user_data[0].email,
 								picture: user_data[0].picture
 							};		
-							var data = {
+							let data = {
 								access_token: token,
 								access_expired: expire,
 								user: user_information
 							};
-							var list = {
+							let list = {
 								data: data
 							};
 							result.cookie("user",token);
@@ -81,12 +81,7 @@ app.post('/', async function(req, result){
 			try{
 				let user_data = await user.select_user_email(req.body.email);
 				if(user_data.length == 0){//沒有註冊過, 註冊資料
-					//製造token
-					var date = Date.now();
-					token = createtoken(req.body.email+date);
-					var time = 3600000;
-					var expire = parseInt(date+time);
-					var new_data = {
+					let new_data = {
 						provider: "facebook",
 						email: req.body.email,
 						name: req.body.name,
@@ -99,19 +94,19 @@ app.post('/', async function(req, result){
 							if(error){
 								throw error;
 							}
-							var user_information = {
+							let user_information = {
 								id: res.insertId,
 								procider: "facebook",
 								name: new_data.name,
 								email: new_data.email,
 								picture: new_data.picture
-							};		
-							var data = {
+							};
+							let data = {
 								access_token: token,
 								access_expired: expire,
 								user: user_information
 							};
-							var list = {
+							let list = {
 								data: data
 							};
 							result.cookie("user",token);
@@ -120,11 +115,6 @@ app.post('/', async function(req, result){
 					})
 				}
 				else if(user_data.length > 0){//已註冊, 找出其他資訊
-					//製造新token
-					var date = Date.now();
-					var time = 3600000;
-					var expire = parseInt(date+time);
-					token = createtoken(req.body.email+date);
 					//更新mysql內的token
 					var new_data = {
 						provider: "facebook",
@@ -137,19 +127,19 @@ app.post('/', async function(req, result){
 						if(error){
 							throw error;
 						}
-						var user_information = {
+						let user_information = {
 							id: user_data[0].id,
 							provider: "facebook",
 							email: new_data.name,			
 							name: new_data.email,
 							picture: new_data.picture
 						};
-						var data = {
+						let data = {
 							access_token: token,
 							access_expired: expire,
 							user: user_information
 						};
-						var list = {
+						let list = {
 							data: data
 						};
 						result.cookie("user",token);
