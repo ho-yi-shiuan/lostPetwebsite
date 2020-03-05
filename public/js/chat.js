@@ -24,13 +24,22 @@ function init_socket(user_info){
 		console.log(message_obj);
 		appendData(message_obj);
 	});
+	
+	//error
+	socket.on('error', function(error_obj){
+		console.log(error_obj);
+		appendData(error_obj);
+	});	
 }
 //socket code end
 //找出使用者資料code start
 var user_name;
 var user_picture;
 var user_id;
-var cookiesend = {};
+var cookiesend = {
+	list_type: "lost",
+	lost_status: ["finding"]	
+};
 function getcookie()
 {
 	var cookies = document.cookie.split(";");
@@ -57,10 +66,10 @@ if(cookieresult == "2")
 		data: JSON.stringify(cookiesend),
 		success: function(res)
 		{
-			if(res.status == "expired"){
+			if(res.status == "token_expired"){
 				alert('Token 已過期, 請重新登入');
 				document.location.href = "/signin.html";
-			}else if(res.status == "wrong"){
+			}else if(res.status == "token_wrong"){
 				alert('無登入紀錄, 請登入');
 				document.location.href = "/signin.html";
 			}else{
@@ -172,6 +181,7 @@ function appendImage(obj){
 }
 
 function appendData(obj){
+	console.log(typeof(obj));
 	obj.forEach(function(element){
 		var chat = document.createElement("div");
 		chat.className = "chat";

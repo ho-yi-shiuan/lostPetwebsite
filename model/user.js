@@ -75,8 +75,8 @@ module.exports = {
 	search_lost_record: function(id,list_type,status){
 		let search_query = "SELECT * from lost_pet where user_id = "+id+" AND post_type = \""+list_type+"\" AND lost_status in (?)";
 		return new Promise((resolve, reject) => {
-			mysql.con.query(search_query, status, function(err, result){
-				if(err){
+			mysql.con.query(search_query, status, function(error, result){
+				if(error){
 					console.log("error message of select user's data in lost pet table in profile api: ");
 					reject(error);
 				}else{
