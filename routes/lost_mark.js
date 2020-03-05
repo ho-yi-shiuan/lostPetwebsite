@@ -1,28 +1,28 @@
 var mysql = require("../mysqlcon.js");
+var lost_data = require('../model/lost_data');
 var express = require("express");
 var bodyParser = require('body-parser');
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.post("/", function(req, res){
-	var url = req.headers.referer;
-	var splited = url.split('=');
-	var socketid = splited[splited.length - 1];
-	var insert_mark = {
+app.post("/", async function(req, res){
+	let url = req.headers.referer;
+	let splited = url.split('=');
+	let socketid = splited[splited.length - 1];
+	let insert_mark = {
 		location: req.body.insert_mark,
 		description: req.body.insert_info,
 		lost_pet_id: socketid
 	}
-	mysql.con.query("INSERT INTO map SET?", insert_mark, function(err, result){
-		if(err){
-			console.log("lost_mark api: ");
-			console.log(err);
-		}else{
-			console.log("insert new mark successful!");
+	try{
+		await insert_map(insert_mark).then(function(){
 			res.json(insert_mark);
-		}
-	});
+		})		
+	}catch(error){
+		console.log(error);
+		res.status(500).send({error:"Database Query Error"});			
+	}
 });
 
 module.exports = app;

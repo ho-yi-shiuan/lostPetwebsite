@@ -12,6 +12,49 @@ function get_token(){
 	}
 }
 
+function insert_mark(){
+	var user_mark = {
+		user_id: user_id,
+		insert_lng: document.getElementsByName("lost_address_lng")[0].value,
+		insert_lat: document.getElementsByName("lost_address_lat")[0].value,
+	}
+	$.ajax({
+		contentType :"application/json",
+		type: "POST",
+		url: "/user_mark",
+		data: JSON.stringify(user_mark),
+		success: function(res)
+		{
+			document.getElementById("input_address").value = "";
+			var location = res.location_lat+", "+res.location_lng;
+			geocoder.geocode( { 'address': location}, function(results, status) {
+				if (status == 'OK') {
+					map.panTo(results[0].geometry.location);
+					var marker = new google.maps.Marker({
+						map: map,
+						position: results[0].geometry.location,//new google.maps.LatLng(22.991965, 120.202518),
+						icon: '/images/placeholder.png'
+					});
+					var infowindow = new google.maps.InfoWindow({
+						content: "新增之標記"
+					});
+					marker.addListener('click', function() {
+						infowindow.open(map, marker);
+					});
+				} else {
+					console.log("新增User標記: "+status);
+				}
+			});
+		},
+		error: function(err)
+		{
+			console.log(err.responseJSON.error);
+			alert(err.responseJSON.error);
+		},
+		dataType: "json"
+	});
+};
+
 var token = get_token();
 
 if(token)
@@ -73,50 +116,8 @@ function initMap() {
 		  lng: 121.5647688
 		}
 	});
-	function insert_mark(){
-		var user_mark = {
-			user_id: user_id,
-			insert_lng: document.getElementsByName("lost_address_lng")[0].value,
-			insert_lat: document.getElementsByName("lost_address_lat")[0].value,
-		}
-		$.ajax({
-			contentType :"application/json",
-			type: "POST",
-			url: "/user_mark",
-			data: JSON.stringify(user_mark),
-			success: function(res)
-			{
-				document.getElementById("input_address").value = "";
-				var location = res.location_lat+", "+res.location_lng;
-				geocoder.geocode( { 'address': location}, function(results, status) {
-					if (status == 'OK') {
-						map.panTo(results[0].geometry.location);
-						var marker = new google.maps.Marker({
-							map: map,
-							position: results[0].geometry.location,//new google.maps.LatLng(22.991965, 120.202518),
-							icon: '/images/placeholder.png'
-						});
-						var infowindow = new google.maps.InfoWindow({
-							content: "新增之標記"
-						});
-						marker.addListener('click', function() {
-							infowindow.open(map, marker);
-						});
-					} else {
-						console.log("新增User標記: "+status);
-					}
-				});
-			},
-			error: function(err)
-			{
-				console.log(err.responseJSON.error);
-				alert(err.responseJSON.error);
-			},
-			dataType: "json"
-		});
-	};
 }
-
+	
 function get_lost(list_type,lost_status,display_title){
 	var get_type = {
 		cookie: token,

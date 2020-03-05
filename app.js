@@ -46,7 +46,6 @@ io.on('connection', async function(socket){
 		//歷史訊息
 		try{
 			const history = await chat.select_history_message(room_id);			
-			const socketid = socket.id;
 			io.to(room_id).emit('history', history);
 		}catch(error){
 			console.log(error);
@@ -148,7 +147,6 @@ io.on('connection', async function(socket){
 });
 
 app.get('/room', async function(req, res){
-	socketid = req.query.id;
 	res.sendFile(__dirname + '/public/socket.html');
 });
 
