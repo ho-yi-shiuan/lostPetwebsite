@@ -1,6 +1,7 @@
 const fs = require('fs');
 const AWS = require('aws-sdk');
 var mysql = require("../mysqlcon.js");
+var lost_data = require('../model/lost_data');
 var express = require("express");
 var multer  = require('multer');
 var multerS3 = require('multer-s3');
@@ -24,207 +25,136 @@ var upload = multer({
   })
 })
 
+const picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/";
+	
 app.post('/', upload.single('image'), async function(req, res){
-	let picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/";
 	let select_body = create_query(req.body);
-	let condition_array = create_query(req.body);
-	select_post(select_body,condition_array).then(function(lost_record){
-		
-	})
-	//以上為純文字篩選結果, 要抓他們的圖片名稱去比對
-	if(req.file){
-		var matched_array = [];
-		console.log("search with file");
-		let image_compare_promise = new Promise((resolve, reject) => {
-			const select_bucket = 'shiuan';
-			const client = new AWS.Rekognition();
-			const photo_target  = 'person_project/lost_pet/'+req.file.key;
-			console.log("target: "+photo_target);
-			var counter = 0;
-			console.log("lost_record.length: "+lost_record.length);
-			for(let j=0; j<lost_record.length; j++){
-				const photo_source  = 'person_project/lost_pet/'+lost_record[j].pet_picture;
-				console.log("source: "+photo_source);
-				const params = {
-					SourceImage: {
-						S3Object: {
-							Bucket: select_bucket,
-							Name: photo_source
-						},
-					},
-					TargetImage: {
-						S3Object: {
-							Bucket: select_bucket,
-							Name: photo_target
-						},
-					},
-					SimilarityThreshold: 70
-				}
-				client.compareFaces(params, function(err, response) {
-					console.log("開始比對");
-					if (err) {
-						console.log(j+" : error, can't compare");
-						console.log(err);
-						lost_record[j].image_compare_result = "unmatch";
-						counter++;
-						console.log("counter = "+counter);
-						if(counter == lost_record.length){
-							resolve("finished");
-						}
-					} else {
-						if(response.FaceMatches.length == 0){
-							//無error但沒有比對到
-							console.log(j+" : no matched data");
-							lost_record[j].image_compare_result = "unmatch";
-							counter++;
-							console.log("counter = "+counter);
-							if(counter == lost_record.length){
-								resolve("finished");
-							}
-						}else{
-							//無error有比對到, 組成一個新的array 再把整個組裝api的function拉到外面寫
-							response.FaceMatches.forEach(data => {
-								let position   = data.Face.BoundingBox
-								let similarity = data.Similarity
-								matched_array.push(j);
-								console.log(j+" : matched");
-								console.log(`The face at: ${position.Left}, ${position.Top} matches with ${similarity} % confidence`);
-								lost_record[j].image_compare_result = "match";
-								counter++;
-								console.log("counter = "+counter);
-								if(counter == lost_record.length){
-									resolve("finished");
-								}
-							})
-						}
-					}
-				});
+	let condition_array = create_query_array(req.body);
+	try{
+		let text_matched_array = await lost_data.select_post(select_body,condition_array);
+		if(text_matched_array.length == 0){
+			//文字結果沒有符合, 無論有無圖片都不會繼續比對
+			var data = {
+				data:[],
+				//image_compare: "no_compare",
+				string_compare: "no_matched"
 			}
-		})
-		image_compare_promise.then(function(){
-			console.log(matched_array);
-			if(matched_array.length > 0 ){
-				//組成新array, 跟else合併
-				var matched_lost_record_array = [];
-				for(let i=0; i<lost_record.length; i++){
-					if(lost_record[i].image_compare_result == "match"){
-						var lost_data_object = {
-							id: lost_record[i].pet_id,
-							name: lost_record[i].pet_name,
-							picture: picture_s3_url+lost_record[i].pet_picture,
-							gender: lost_record[i].gender,
-							age: lost_record[i].age,
-							breed: lost_record[i].breed,
-							color: lost_record[i].color,
-							lost_location: lost_record[i].lost_location,
-							lost_location_lng: lost_record[i].lost_location_lng,
-							lost_location_lat: lost_record[i].lost_location_lat,
-							lost_time: lost_record[i].lost_time,
-							lost_status: lost_record[i].lost_status,
-							post_type: lost_record[i].post_type,
-							title: lost_record[i].title,
-							content: lost_record[i].content,
-							image_compare_result: lost_record[i].image_compare_result
-						}
-						matched_lost_record_array.push(lost_data_object);
-						console.log(i+" : push to match");
-					}
-				}
-				var data = {
-					data:matched_lost_record_array,
-					image_compare: "matched"
-				}
-				if(select_array.length == 0){
-					//無文字條件但有圖片
-					data.string_compare = "no_string";
-				}else{
-					//有文字且有圖片搜尋
-					data.string_compare = "with_string";
-				}
-				console.log("圖片搜尋且有比對到");
-				console.log(data);
-				res.json(data);	
-			}else{
-				var unmatch_lost_record_array = [];
-				for(let i=0; i<lost_record.length; i++){
-					var lost_data_object = {
-						id: lost_record[i].pet_id,
-						name: lost_record[i].pet_name,
-						picture: picture_s3_url+lost_record[i].pet_picture,
-						gender: lost_record[i].gender,
-						age: lost_record[i].age,
-						breed: lost_record[i].breed,
-						color: lost_record[i].color,
-						lost_location: lost_record[i].lost_location,
-						lost_location_lng: lost_record[i].lost_location_lng,
-						lost_location_lat: lost_record[i].lost_location_lat,
-						lost_time: lost_record[i].lost_time,
-						lost_status: lost_record[i].lost_status,
-						post_type: lost_record[i].post_type,
-						title: lost_record[i].title,
-						content: lost_record[i].content,
-						image_compare_result: lost_record[i].image_compare_result
-					}
-					unmatch_lost_record_array.push(lost_data_object);
-					console.log(i+" : push to unmatch");
-				};
-				var data = { 
-					data:unmatch_lost_record_array,
-					image_compare: "no_matched"
-				}
-				if(select_array.length == 0){
-					//無文字條件但有圖片
-					data.string_compare = "no_string";
-				}else{
-					//有文字且有圖片搜尋
-					data.string_compare = "with_string";
-				}
-				console.log("圖片搜尋沒有比對到");
-				console.log(data);
-				res.json(data);					
-			}		
-		})	
-	}else{
-		console.log("search without file");
-		let lost_record_array = [];
-		for(let i=0; i<lost_record.length; i++){
-			var lost_data_object = {
-				id: lost_record[i].pet_id,
-				name: lost_record[i].pet_name,
-				picture: picture_s3_url+lost_record[i].pet_picture,
-				gender: lost_record[i].gender,
-				age: lost_record[i].age,
-				breed: lost_record[i].breed,
-				color: lost_record[i].color,
-				lost_location: lost_record[i].lost_location,
-				lost_location_lng: lost_record[i].lost_location_lng,
-				lost_location_lat: lost_record[i].lost_location_lat,
-				lost_time: lost_record[i].lost_time,
-				lost_status: lost_record[i].lost_status,
-				post_type: lost_record[i].post_type,
-				title: lost_record[i].title,
-				content: lost_record[i].content,
-				image_compare_result: "no_upload"
-			}
-			lost_record_array.push(lost_data_object);
-			console.log(i+" : push without match");
-		};
-		var data = {
-			data:lost_record_array,
-			image_compare: "no_compare",
-		}
-		if(select_array.length == 0){
-			//無文字條件但有圖片
-			data.string_compare = "no_string";
+			res.send(data);
 		}else{
-			//有文字且有圖片搜尋
-			data.string_compare = "with_string";
+			if(req.file){
+				//先去篩選圖片後再傳到最後組api的function
+				compare_image(text_matched_array,request_file).then(function(result){
+					res.send(create_api(result));
+				})
+			}else{
+				let result = {
+					array: text_matched_array,
+					image_compare: "no_compare",
+					string_compare: "with_string"
+				}
+				res.send(create_api(result));
+			}
 		}
-		console.log("沒有使用圖片搜尋");
-		console.log(data);
-		res.json(data);		
+	}catch(error){
+		console.log(error);
+		return mysql.con.rollback(function(){
+			res.status(500).send({error:"Database Query Error"});
+		});				
 	}
 });
+
+function compare_image(array,file){
+	//promise(篩選圖片).then(判斷並return 結果跟 situation)
+	console.log("search with file");
+	s3_compare.then(function(result_array){
+		if(result_array.length == 0){
+			let result = {
+				array: array,
+				image_compare: "no_matched",
+				string_compare: "with_string"
+			}
+			return result;				
+		}else{
+			let result = {
+				array: result_array,
+				image_compare: "matched",
+				string_compare: "with_string"
+			}
+			return result;				
+		}
+	})
+}
+
+function s3_compare(file){
+	let image_matched_array = [];
+	return new Promise((resolve, reject) => {
+		const select_bucket = 'shiuan';
+		const client = new AWS.Rekognition();
+		const photo_target  = 'person_project/lost_pet/'+file.key;
+		console.log("target: "+photo_target);
+		let counter = 0;
+		console.log("array.length: "+array.length);
+		for(let j=0; j<array.length; j++){
+			const photo_source  = 'person_project/lost_pet/'+array[j].pet_picture;
+			console.log("source: "+photo_source);
+			const params = {
+				SourceImage: {
+					S3Object: {
+						Bucket: select_bucket,
+						Name: photo_source
+					},
+				},
+				TargetImage: {
+					S3Object: {
+						Bucket: select_bucket,
+						Name: photo_target
+					},
+				},
+				SimilarityThreshold: 70
+			}
+			client.compareFaces(params, function(err, response) {
+				console.log("開始比對");
+				if (err) {
+					console.log(j+" : error, can't compare");
+					console.log(err);
+					array[j].image_compare_result = "unmatch";
+					counter++;
+					console.log("counter = "+counter);
+					if(counter == array.length){
+						resolve(image_matched_array);
+					}
+				} else {
+					if(response.FaceMatches.length == 0){
+						//無error但沒有比對到
+						console.log(j+" : no matched data");
+						array[j].image_compare_result = "unmatch";
+						counter++;
+						console.log("counter = "+counter);
+						if(counter == array.length){
+							resolve(image_matched_array);
+						}
+					}else{
+						//無error有比對到, 組成一個新的array 再把整個組裝api的function拉到外面寫
+						response.FaceMatches.forEach(data => {
+							let position   = data.Face.BoundingBox
+							let similarity = data.Similarity
+							image_matched_array.push(j);
+							console.log(j+" : matched");
+							console.log(`The face at: ${position.Left}, ${position.Top} matches with ${similarity} % confidence`);
+							array[j].image_compare_result = "match";
+							image_matched_array.push(array[j]);
+							counter++;
+							console.log("counter = "+counter);
+							if(counter == array.length){
+								resolve(image_matched_array);
+							}
+						})
+					}
+				}
+			});
+		}
+	})
+}
 
 function create_query(body){
 	let select_array = [];
@@ -306,5 +236,38 @@ function create_query_array(body){
 	}
 	return condition_array;
 };
-	
+
+function create_api(compare_result){
+	//組成新array, 跟else合併
+	let lost_record_array = [];
+	for(let i=0; i<compare_result.array.length; i++){
+		const list = compare_result.array[i];
+		var lost_data_object = {
+			id: list.pet_id,
+			name: list.pet_name,
+			picture: picture_s3_url+list.pet_picture,
+			gender: list.gender,
+			age: list.age,
+			breed: list.breed,
+			color: list.color,
+			lost_location: list.lost_location,
+			lost_location_lng: list.lost_location_lng,
+			lost_location_lat: list.lost_location_lat,
+			lost_time: list.lost_time,
+			lost_status: list.lost_status,
+			post_type: list.post_type,
+			title: list.title,
+			content: list.content
+		}
+		lost_record_array.push(lost_data_object);
+	}
+	var data = {
+		data:lost_record_array,
+		image_compare: compare_result.image_compare,
+		string_compare: compare_result.string_compare
+	}
+	console.log(data);
+	return data;				
+};
+
 module.exports = app;

@@ -231,7 +231,6 @@ $("#image").on("change",function (e) {
 function ajax_search(){
 	var form = $('form')[0];
 	var formData = new FormData(form);
-	console.log(formData);
 	$.ajax({
 		contentType: false,
 		cache: false,

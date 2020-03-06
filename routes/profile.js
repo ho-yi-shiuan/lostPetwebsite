@@ -39,6 +39,7 @@ app.post("/", async function(req, res){
 					let picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/";
 					let lost_array = [];
 					for(i=0; i<lost_record.length; i++){
+						const record = lost_record[i]
 						lost_array.push({
 							id: lost_record[i].pet_id,
 							name: lost_record[i].pet_name,
