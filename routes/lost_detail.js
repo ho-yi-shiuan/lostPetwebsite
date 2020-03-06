@@ -1,3 +1,4 @@
+require('dotenv').config();
 const fs = require('fs');
 var mysql = require("../mysqlcon.js");
 var lost_data = require('../model/lost_data');
@@ -7,7 +8,6 @@ var app = express();
 app.use('/public',express.static('public'));
 
 app.get('/', async function(req, res){
-	var picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/";
 	try{
 		let lost_detail = await lost_data.select_lost_detail(req.query.id);
 		let map = await lost_data.select_map(req.query.id);		
@@ -21,7 +21,7 @@ app.get('/', async function(req, res){
 		let data = {
 			id: lost_detail[0].pet_id,
 			name: lost_detail[0].pet_name,
-			picture: picture_s3_url+lost_detail[0].pet_picture,
+			picture: process.env.CDN_url+"/person_project/lost_pet/"+lost_detail[0].pet_picture,
 			gender: lost_detail[0].gender,
 			age: lost_detail[0].age,
 			breed: lost_detail[0].breed,

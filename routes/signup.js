@@ -1,3 +1,4 @@
+require('dotenv').config();
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 var mysql = require("../mysqlcon.js");
@@ -36,7 +37,7 @@ app.post('/', async function(req, res){
 					email: req.body.email,
 					password: bcrypt_password,
 					name: req.body.name,
-					picture: "https://d2h10qrqll8k7g.cloudfront.net/person_project/image/user.png",
+					picture: process.env.CDN_url+"/person_project/image/user.png",
 					access_token: token,
 					access_expired: expire
 				}

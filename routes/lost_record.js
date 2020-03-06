@@ -1,3 +1,4 @@
+require('dotenv').config();
 const fs = require('fs');
 const AWS = require('aws-sdk');
 var mysql = require("../mysqlcon.js");
@@ -18,7 +19,7 @@ var upload = multer({
     bucket: 'shiuan/person_project/lost_pet',
 	contentType: multerS3.AUTO_CONTENT_TYPE,
     key: function (req, file, cb) {
-      cb(null, Date.now()+file.originalname);// 檔案命名要重新想!!!!是否綁room id?? 這樣前端比較好叫
+      cb(null, Date.now()+file.originalname);
     }
   })
 })
@@ -30,7 +31,7 @@ app.post('/', upload.single('image'), async function(req, res){
 		color_array = req.body.pet_color.split(/[ ,]+/);	
 		for(let i=0; i<color_array.length; i++){
 			if(color_array[i].indexOf("色") >= 0){
-				var new_element = color_array[i].substring(0, color_array[i].length-1);
+				let new_element = color_array[i].substring(0, color_array[i].length-1);
 				color_array[i] = new_element;
 			}
 		}
@@ -130,7 +131,6 @@ app.post('/', upload.single('image'), async function(req, res){
 });
 
 app.get('/', async function(req, res){
-	let picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/";
 	if(req.query.post_type){
 		select_lost_record = "SELECT * from lost_pet where lost_status = \""+req.query.lost_status+"\" AND post_type = \""+req.query.post_type+"\";";			
 	}else{
@@ -144,7 +144,7 @@ app.get('/', async function(req, res){
 			lost_data_object = {
 				id: lost_record[i].pet_id,
 				name: lost_record[i].pet_name,
-				picture: picture_s3_url+lost_record[i].pet_picture,
+				picture: process.env.CDN_url+"/person_project/lost_pet/"+lost_record[i].pet_picture,
 				gender: lost_record[i].gender,
 				age: lost_record[i].age,
 				breed: lost_record[i].breed,
@@ -171,7 +171,6 @@ app.get('/', async function(req, res){
 });
 
 function create_compare_query(body, color_array){
-	//拆成 category_query 跟 condition_array 各一支 function
 	let query_array = [];
 	if(body.category){
 		let category_query = " category in (?)";
@@ -211,7 +210,6 @@ function create_compare_query(body, color_array){
 }
 
 function create_compare_array(body, init_array){
-	//拆成 category_query 跟 condition_array 各一支 function
 	if(body.category){
 		init_array.push([body.category]);
 	}

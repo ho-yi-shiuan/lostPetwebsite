@@ -1,3 +1,4 @@
+require('dotenv').config();
 const crypto = require('crypto');
 var mysql = require("../mysqlcon.js");
 var user = require('../model/user');
@@ -36,14 +37,13 @@ app.post("/", async function(req, res){
 						let location_mark = result[k].location_lat+", "+result[k].location_lng;
 						mark_array.push(location_mark);
 					}
-					let picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/";
 					let lost_array = [];
 					for(i=0; i<lost_record.length; i++){
 						const record = lost_record[i]
 						lost_array.push({
 							id: lost_record[i].pet_id,
 							name: lost_record[i].pet_name,
-							picture: picture_s3_url+lost_record[i].pet_picture,
+							picture: process.env.CDN_url+"/person_project/lost_pet/"+lost_record[i].pet_picture,
 							gender: lost_record[i].gender,
 							age: lost_record[i].age,
 							breed: lost_record[i].breed,

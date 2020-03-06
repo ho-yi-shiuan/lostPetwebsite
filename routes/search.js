@@ -1,3 +1,4 @@
+require('dotenv').config();
 const fs = require('fs');
 const AWS = require('aws-sdk');
 var mysql = require("../mysqlcon.js");
@@ -20,7 +21,7 @@ var upload = multer({
     bucket: 'shiuan/person_project/lost_pet',
 	contentType: multerS3.AUTO_CONTENT_TYPE,
     key: function (req, file, cb) {
-      cb(null, Date.now()+file.originalname);// 檔案命名要重新想!!!!是否綁room id?? 這樣前端比較好叫
+      cb(null, Date.now()+file.originalname);
     }
   })
 })
@@ -34,7 +35,7 @@ app.post('/', upload.single('image'), async function(req, res){
 		let text_matched_array = await lost_data.select_post(select_body,condition_array);
 		if(text_matched_array.length == 0){
 			//文字結果沒有符合, 無論有無圖片都不會繼續比對
-			var data = {
+			let data = {
 				data:[],
 				//image_compare: "no_compare",
 				string_compare: "no_matched"
@@ -43,7 +44,22 @@ app.post('/', upload.single('image'), async function(req, res){
 		}else{
 			if(req.file){
 				//先去篩選圖片後再傳到最後組api的function
-				compare_image(text_matched_array,request_file).then(function(result){
+				console.log("search with file");
+				s3_compare(text_matched_array,req.file,req.file.key).then(function(result_array){
+					let result;
+					if(result_array.length == 0){
+						result = {
+							array: text_matched_array,
+							image_compare: "no_matched",
+							string_compare: "with_string"
+						}			
+					}else{
+						result = {
+							array: result_array,
+							image_compare: "matched",
+							string_compare: "with_string"
+						}			
+					}
 					res.send(create_api(result));
 				})
 			}else{
@@ -63,40 +79,15 @@ app.post('/', upload.single('image'), async function(req, res){
 	}
 });
 
-function compare_image(array,file){
-	//promise(篩選圖片).then(判斷並return 結果跟 situation)
-	console.log("search with file");
-	s3_compare.then(function(result_array){
-		if(result_array.length == 0){
-			let result = {
-				array: array,
-				image_compare: "no_matched",
-				string_compare: "with_string"
-			}
-			return result;				
-		}else{
-			let result = {
-				array: result_array,
-				image_compare: "matched",
-				string_compare: "with_string"
-			}
-			return result;				
-		}
-	})
-}
-
-function s3_compare(file){
+function s3_compare(array,file,key){
 	let image_matched_array = [];
 	return new Promise((resolve, reject) => {
 		const select_bucket = 'shiuan';
 		const client = new AWS.Rekognition();
-		const photo_target  = 'person_project/lost_pet/'+file.key;
-		console.log("target: "+photo_target);
-		let counter = 0;
-		console.log("array.length: "+array.length);
+		const photo_target  = 'person_project/lost_pet/'+key;
+		const counter = 0;
 		for(let j=0; j<array.length; j++){
 			const photo_source  = 'person_project/lost_pet/'+array[j].pet_picture;
-			console.log("source: "+photo_source);
 			const params = {
 				SourceImage: {
 					S3Object: {
@@ -110,41 +101,30 @@ function s3_compare(file){
 						Name: photo_target
 					},
 				},
-				SimilarityThreshold: 70
+				SimilarityThreshold: 80
 			}
 			client.compareFaces(params, function(err, response) {
-				console.log("開始比對");
 				if (err) {
-					console.log(j+" : error, can't compare");
-					console.log(err);
-					array[j].image_compare_result = "unmatch";
+					console.log("pet_id "+array[j].pet_id+" : error, can't compare");
 					counter++;
-					console.log("counter = "+counter);
 					if(counter == array.length){
 						resolve(image_matched_array);
 					}
 				} else {
 					if(response.FaceMatches.length == 0){
-						//無error但沒有比對到
-						console.log(j+" : no matched data");
-						array[j].image_compare_result = "unmatch";
+						//no error, unmatch
+						console.log("pet_id "+array[j].pet_id+" : no matched data");
 						counter++;
-						console.log("counter = "+counter);
 						if(counter == array.length){
 							resolve(image_matched_array);
 						}
 					}else{
-						//無error有比對到, 組成一個新的array 再把整個組裝api的function拉到外面寫
-						response.FaceMatches.forEach(data => {
-							let position   = data.Face.BoundingBox
+						//no error, match
+						response.FaceMatches.forEach(function(data){
 							let similarity = data.Similarity
-							image_matched_array.push(j);
-							console.log(j+" : matched");
-							console.log(`The face at: ${position.Left}, ${position.Top} matches with ${similarity} % confidence`);
-							array[j].image_compare_result = "match";
+							console.log("pet_id "+array[j].pet_id+" : match with "+similarity+" % confidence");
 							image_matched_array.push(array[j]);
 							counter++;
-							console.log("counter = "+counter);
 							if(counter == array.length){
 								resolve(image_matched_array);
 							}
@@ -178,11 +158,9 @@ function create_query(body){
 		let gender_body = " (gender is null or gender in (?))";
 		select_array.push(gender_body);
 	}
-	//地址篩經緯度
 	if(body.lost_address_lng){
 		select_array.push(" lost_location_lng BETWEEN "+body.lost_address_lng+"-0.05 AND "+body.lost_address_lng+"+0.05 AND lost_location_lat BETWEEN "+body.lost_address_lat+"-0.05 AND "+body.lost_address_lat+"+0.05");
 	}
-	//顏色where color like '%黑%' OR '%白%'
 	if(typeof(body.select_color) == "object"){
 		let color_body = "";
 		color_body += " (";
@@ -208,7 +186,7 @@ function create_query(body){
 };
 
 function create_query_array(body){
-	var condition_array = [];
+	let condition_array = [];
 	if(typeof(body.lost_status) == "object"){
 		condition_array.push(body.lost_status);
 	}else if(typeof(body.lost_status) == "string"){
@@ -238,14 +216,13 @@ function create_query_array(body){
 };
 
 function create_api(compare_result){
-	//組成新array, 跟else合併
 	let lost_record_array = [];
 	for(let i=0; i<compare_result.array.length; i++){
 		const list = compare_result.array[i];
-		var lost_data_object = {
+		let lost_data_object = {
 			id: list.pet_id,
 			name: list.pet_name,
-			picture: picture_s3_url+list.pet_picture,
+			picture: process.env.CDN_url+"/person_project/lost_pet/"+list.pet_picture,
 			gender: list.gender,
 			age: list.age,
 			breed: list.breed,
@@ -261,7 +238,7 @@ function create_api(compare_result){
 		}
 		lost_record_array.push(lost_data_object);
 	}
-	var data = {
+	let data = {
 		data:lost_record_array,
 		image_compare: compare_result.image_compare,
 		string_compare: compare_result.string_compare

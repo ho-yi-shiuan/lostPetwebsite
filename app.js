@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const server = require('http').Server(app);
@@ -32,7 +33,7 @@ io.on('connection', async function(socket){
 	var room_id;
 	var error_message = [{
 		name: "system manager",
-		picture: "https://d2h10qrqll8k7g.cloudfront.net/person_project/image/close.png",
+		picture: process.env.CDN_url+"/person_project/image/close.png",
 		content: "Database query error, please refresh page and try later",
 		content_type: "text",
 		time: Date.now(),
