@@ -78,17 +78,17 @@ app.post('/', async function(req, result){
 		}
 		//以fb登入
 		mysql.con.beginTransaction( async function(error){
+			let new_data = {
+				provider: "facebook",
+				email: req.body.email,
+				name: req.body.name,
+				picture: req.body.picture,
+				access_token: token,
+				access_expired: expire
+			}
 			try{
 				let user_data = await user.select_user_email(req.body.email);
 				if(user_data.length == 0){//沒有註冊過, 註冊資料
-					let new_data = {
-						provider: "facebook",
-						email: req.body.email,
-						name: req.body.name,
-						picture: req.body.picture,
-						access_token: token,
-						access_expired: expire
-					}
 					await insert_user(new_data).then(function(res){
 						mysql.con.commit(function(error){
 							if(error){
@@ -116,13 +116,6 @@ app.post('/', async function(req, result){
 				}
 				else if(user_data.length > 0){//已註冊, 找出其他資訊
 					//更新mysql內的token
-					var new_data = {
-						provider: "facebook",
-						name: req.body.name,
-						picture: req.body.picture,
-						access_token: token,
-						access_expired: expire
-					}
 					await user.update_user(new_data,user_data[0].id).then(function(){
 						if(error){
 							throw error;

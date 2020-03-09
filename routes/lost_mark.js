@@ -1,3 +1,5 @@
+const redis = require('redis');
+const client = redis.createClient(); 
 var mysql = require("../mysqlcon.js");
 var lost_data = require('../model/lost_data');
 var express = require("express");
@@ -16,9 +18,15 @@ app.post("/", async function(req, res){
 		lost_pet_id: socketid
 	}
 	try{
-		await insert_map(insert_mark).then(function(){
+		await lost_data.insert_map(insert_mark).then(function(){
+			client.del("lost_detail"+socketid, function (err, success) {
+				if(err){
+					throw err;
+				}
+				console.log("delete lost detail of id"+socketid+" in cache");
+			});			
 			res.json(insert_mark);
-		})		
+		})
 	}catch(error){
 		console.log(error);
 		res.status(500).send({error:"Database Query Error"});			

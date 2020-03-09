@@ -11,9 +11,9 @@ app.use(bodyParser.json());
 app.post("/", async function(req, res){
 	mysql.con.beginTransaction( async function(error){
 		try{
-			let token = req.body.cookie;
-			let now = Date.now();
-			let info = await user.login_by_token(token);
+			const token = req.body.cookie;
+			const now = Date.now();
+			const info = await user.login_by_token(token);
 			if(info.length == 0){
 				return mysql.con.rollback(function(){
 					console.log("select user by token in profile api: token wrong");
@@ -25,8 +25,9 @@ app.post("/", async function(req, res){
 					res.send({status: "token_expired"});
 				});				
 			}
-			let lost_record = await user.search_lost_record(info[0].id,req.body.list_type,req.body.lost_status);
-			let message = await user.select_message(info[0].id);
+			
+			const lost_record = await user.search_lost_record(info[0].id,req.body.list_type,req.body.lost_status);
+			const message = await user.select_message(info[0].id);
 			await user.search_mark(info[0].id).then(function(result){
 				mysql.con.commit(function(error){
 					if(error){
@@ -66,7 +67,7 @@ app.post("/", async function(req, res){
 							link_id: message[j].link_id
 						})
 					}
-					let data = {
+					const data = {
 						id: info[0].id,
 						provider: info[0].provider,
 						name: info[0].name,
@@ -76,7 +77,7 @@ app.post("/", async function(req, res){
 						message: message_array,
 						mark: mark_array
 					};
-					let list = {
+					const list = {
 						status: "success",
 						data: data
 					};

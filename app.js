@@ -1,4 +1,6 @@
 require('dotenv').config();
+const redis = require('redis');
+const client = redis.createClient(); 
 const express = require('express');
 const app = express();
 const server = require('http').Server(app);
@@ -12,7 +14,11 @@ var mysql = require("./mysqlcon.js");
 AWS.config.loadFromPath('./s3_config.json');
 var s3Bucket = new AWS.S3( { params: {Bucket: 'shiuan/person_project/socket'} } );
 
-app.use(express.static("public"));// 待改善: 訊息按 enter可直接發送
+client.on('connect', () => {
+  console.log('Redis client connected');
+});
+
+app.use(express.static("public"));
 //新增走失紀錄 api
 app.use('/lost_record', require('./routes/lost_record'));
 app.use('/search', require('./routes/search'));
@@ -31,7 +37,7 @@ var roomInfo = {};
 // 當發生連線事件
 io.on('connection', async function(socket){
 	var room_id;
-	var error_message = [{
+	const error_message = [{
 		name: "system manager",
 		picture: process.env.CDN_url+"/person_project/image/close.png",
 		content: "Database query error, please refresh page and try later",

@@ -1,4 +1,6 @@
 require('dotenv').config();
+const redis = require('redis');
+const client = redis.createClient(); 
 const fs = require('fs');
 const AWS = require('aws-sdk');
 var mysql = require("../mysqlcon.js");
@@ -36,7 +38,7 @@ app.post('/', upload.single('image'), async function(req, res){
 			}
 		}
 	}
-	let pet_data = {
+	const pet_data = {
 			category: req.body.category,
 			pet_name: req.body.pet_name,
 			pet_picture: req.file.key,
@@ -63,13 +65,13 @@ app.post('/', upload.single('image'), async function(req, res){
 		}).then(async function(){
 			if(req.body.post_type == "lost"){
 				//find near user of lost/find address
-				let near_user = await lost_data.select_near_user(req.body.lost_address_lng,req.body.lost_address_lat);
+				const near_user = await lost_data.select_near_user(req.body.lost_address_lng,req.body.lost_address_lat);
 				let near_user_array = [];
 				//篩掉重複的user_id
 				for(j=0; j<near_user.length; j++){
 					near_user_array.push(near_user[j].user_id);
 				}
-				let new_user_array = near_user_array.filter(function(element, index, arr){
+				const new_user_array = near_user_array.filter(function(element, index, arr){
 					return arr.indexOf(element)=== index;
 				});
 				for(let k=0; k<new_user_array.length; k++){
@@ -122,6 +124,12 @@ app.post('/', upload.single('image'), async function(req, res){
 					}					
 				}
 			})
+			client.del("post_list", function (err, success) {
+				if(err){
+					throw err;
+				}
+				console.log("delete lost record in cache");
+			});
 			res.redirect("/");
 		})		
 	}catch(error){
@@ -131,39 +139,53 @@ app.post('/', upload.single('image'), async function(req, res){
 });
 
 app.get('/', async function(req, res){
-	if(req.query.post_type){
-		select_lost_record = "SELECT * from lost_pet where lost_status = \""+req.query.lost_status+"\" AND post_type = \""+req.query.post_type+"\";";			
-	}else{
-		select_lost_record = "SELECT * from lost_pet where lost_status = \""+req.query.lost_status+"\" ;"		
-	}
 	try{
-		let lost_record = await lost_data.get_all_lost(select_lost_record);
-		let lost_record_array = [];
-		let lost_data_object;
-		for(i=0; i<lost_record.length; i++){
-			lost_data_object = {
-				id: lost_record[i].pet_id,
-				name: lost_record[i].pet_name,
-				picture: process.env.CDN_url+"/person_project/lost_pet/"+lost_record[i].pet_picture,
-				gender: lost_record[i].gender,
-				age: lost_record[i].age,
-				breed: lost_record[i].breed,
-				color: lost_record[i].color,
-				lost_location: lost_record[i].lost_location,
-				lost_location_lng: lost_record[i].lost_location_lng,
-				lost_location_lat: lost_record[i].lost_location_lat,
-				lost_time: lost_record[i].lost_time,
-				lost_status: lost_record[i].lost_status,
-				post_type: lost_record[i].post_type,
-				title: lost_record[i].title,
-				content: lost_record[i].content
+		client.get("post_list",async function(err, result){
+			if(err){
+				throw err;
 			}
-			lost_record_array.push(lost_data_object);
-		};
-		let data = {
-			data:lost_record_array
-		}
-		res.json(data);		
+			else if(result !== null)//get data from cache
+			{
+				console.log("found post list of index page in cache");
+				res.json(JSON.parse(result));
+			}
+			else//get data from db and update cache
+			{
+				if(req.query.post_type){
+					select_lost_record = "SELECT * from lost_pet where lost_status = \""+req.query.lost_status+"\" AND post_type = \""+req.query.post_type+"\";";			
+				}else{
+					select_lost_record = "SELECT * from lost_pet where lost_status = \""+req.query.lost_status+"\" ;"		
+				}
+				const lost_record = await lost_data.get_all_lost(select_lost_record);
+				let lost_record_array = [];
+				for(i=0; i<lost_record.length; i++){
+					const record = lost_record[i];
+					let lost_data_object = {
+						id: record.pet_id,
+						name: record.pet_name,
+						picture: process.env.CDN_url+"/person_project/lost_pet/"+record.pet_picture,
+						gender: record.gender,
+						age: record.age,
+						breed: record.breed,
+						color: record.color,
+						lost_location: record.lost_location,
+						lost_location_lng: record.lost_location_lng,
+						lost_location_lat: record.lost_location_lat,
+						lost_time: record.lost_time,
+						lost_status: record.lost_status,
+						post_type: record.post_type,
+						title: record.title,
+						content: record.content
+					}
+					lost_record_array.push(lost_data_object);
+				};
+				const data = {
+					data:lost_record_array
+				}
+				res.json(data);
+				client.set("post_list", JSON.stringify(data), redis.print);					
+			}
+		})
 	}catch(error){
 		console.log(error);
 		res.status(500).send({error:"Database Query Error"});		
@@ -173,15 +195,15 @@ app.get('/', async function(req, res){
 function create_compare_query(body, color_array){
 	let query_array = [];
 	if(body.category){
-		let category_query = " category in (?)";
+		const category_query = " category in (?)";
 		query_array.push(category_query);
 	}
 	if(body.pet_gender){
-		let gender_query = " gender in (?)";
+		const gender_query = " gender in (?)";
 		query_array.push(gender_query);
 	}
 	if(body.pet_breed){
-		let pet_breed_query = " breed in (?)";
+		const pet_breed_query = " breed in (?)";
 		query_array.push(pet_breed_query);
 	}
 	let color_query = " (";			

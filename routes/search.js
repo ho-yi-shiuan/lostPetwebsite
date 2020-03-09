@@ -26,16 +26,14 @@ var upload = multer({
   })
 })
 
-const picture_s3_url = "https://d2h10qrqll8k7g.cloudfront.net/person_project/lost_pet/";
-	
 app.post('/', upload.single('image'), async function(req, res){
-	let select_body = create_query(req.body);
-	let condition_array = create_query_array(req.body);
+	const select_body = create_query(req.body);
+	const condition_array = create_query_array(req.body);
 	try{
-		let text_matched_array = await lost_data.select_post(select_body,condition_array);
+		const text_matched_array = await lost_data.select_post(select_body,condition_array);
 		if(text_matched_array.length == 0){
 			//文字結果沒有符合, 無論有無圖片都不會繼續比對
-			let data = {
+			const data = {
 				data:[],
 				//image_compare: "no_compare",
 				string_compare: "no_matched"
@@ -63,7 +61,7 @@ app.post('/', upload.single('image'), async function(req, res){
 					res.send(create_api(result));
 				})
 			}else{
-				let result = {
+				const result = {
 					array: text_matched_array,
 					image_compare: "no_compare",
 					string_compare: "with_string"
@@ -79,13 +77,14 @@ app.post('/', upload.single('image'), async function(req, res){
 	}
 });
 
+		
 function s3_compare(array,file,key){
 	let image_matched_array = [];
 	return new Promise((resolve, reject) => {
 		const select_bucket = 'shiuan';
 		const client = new AWS.Rekognition();
 		const photo_target  = 'person_project/lost_pet/'+key;
-		const counter = 0;
+		let counter = 0;
 		for(let j=0; j<array.length; j++){
 			const photo_source  = 'person_project/lost_pet/'+array[j].pet_picture;
 			const params = {
@@ -134,28 +133,28 @@ function s3_compare(array,file,key){
 			});
 		}
 	})
-}
+};
 
 function create_query(body){
 	let select_array = [];
 	if(body.lost_status){
-		let lost_status_body = " lost_status in (?)";
+		const lost_status_body = " lost_status in (?)";
 		select_array.push(lost_status_body);
 	}
 	if(body.post_type){
-		let post_type_body = " post_type in (?)";
+		const post_type_body = " post_type in (?)";
 		select_array.push(post_type_body);
 	}
 	if(body.select_category){
-		let category_body = " category in (?)";
+		const category_body = " category in (?)";
 		select_array.push(category_body);
 	}
 	if(body.select_breed){
-		let breed_body = " breed in (?)";
+		const breed_body = " breed in (?)";
 		select_array.push(breed_body);
 	}
 	if(body.select_gender){
-		let gender_body = " (gender is null or gender in (?))";
+		const gender_body = " (gender is null or gender in (?))";
 		select_array.push(gender_body);
 	}
 	if(body.lost_address_lng){
@@ -243,7 +242,6 @@ function create_api(compare_result){
 		image_compare: compare_result.image_compare,
 		string_compare: compare_result.string_compare
 	}
-	console.log(data);
 	return data;				
 };
 

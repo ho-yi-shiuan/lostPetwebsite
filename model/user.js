@@ -115,5 +115,19 @@ module.exports = {
 				}
 			});
 		})	
-	}
+	},
+	
+	insert_mark: function(user_mark){
+		return new Promise((resolve, reject) => {
+			mysql.con.query("INSERT into user_mark set?", user_mark, function(error, result){
+				if(error){
+					console.log("error message of insert user mark in user_mark api: ");
+					reject(error);
+				}else{
+					console.log("insert user mark suscessfully!");
+					resolve("success");
+				}
+			});
+		})	
+	}	
 };

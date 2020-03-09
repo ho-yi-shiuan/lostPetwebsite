@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+var user = require('../model/user');
 var mysql = require("../mysqlcon.js");
 var express = require("express");
 var bodyParser = require('body-parser');
@@ -12,16 +13,16 @@ app.post('/', async function(req, res){
 		location_lng: req.body.insert_lng,
 		location_lat: req.body.insert_lat
 	}
-	mysql.con.query("INSERT into user_mark set?", user_mark, function(err, result){
-		if(err){
-			console.log("error message of insert user mark in user_mark api: ");
-			console.log(err);
-			res.status(500).send({error:"Database query error, Please try later"});
-		}else{
-			console.log("insert user mark suscessfully!");
+	try{
+		user.insert_mark(user_mark).then(function(){
 			res.send(user_mark);
-		}
-	});
+		})
+	}catch(error){
+		console.log(error);
+		return mysql.con.rollback(function(){
+			res.status(500).send({error:"Database Query Error"});
+		});				
+	}
 });
 	
 module.exports = app;
