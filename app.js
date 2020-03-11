@@ -160,3 +160,5 @@ app.get('/room', async function(req, res){
 server.listen(3000, function(){
     console.log("connected to port 3000");
 });
+
+module.exports = app;

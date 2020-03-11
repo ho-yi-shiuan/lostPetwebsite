@@ -3,155 +3,153 @@ function row(){
 		scrollTop: $(".search_bar").offset().top
 	}, 500);
 }
-<!-- Initialize the plugin: -->
-$(document).ready(function() {
+
+$(document).ready(function(){
 	$('[name="select_breed"]').multiselect();
 	$('[name="select_color"]').multiselect();
 });
-//google map code start
-console.log("開始執行map script");
-function initMap(map_id,locate) {
-	console.log("執行init map");
+
+function initMap(map_id,locate){
 	var geocoder = new google.maps.Geocoder();
 	var map = new google.maps.Map(document.getElementById(map_id), {
 		zoom: 12,
 		styles:[
-    {
-        "featureType": "landscape.man_made",
-        "elementType": "geometry",
-        "stylers": [
-            {
-                "color": "#f7f1df"
-            }
-        ]
-    },
-    {
-        "featureType": "landscape.natural",
-        "elementType": "geometry",
-        "stylers": [
-            {
-                "color": "#d0e3b4"
-            }
-        ]
-    },
-    {
-        "featureType": "landscape.natural.terrain",
-        "elementType": "geometry",
-        "stylers": [
-            {
-                "visibility": "off"
-            }
-        ]
-    },
-    {
-        "featureType": "poi",
-        "elementType": "labels",
-        "stylers": [
-            {
-                "visibility": "off"
-            }
-        ]
-    },
-    {
-        "featureType": "poi.business",
-        "elementType": "all",
-        "stylers": [
-            {
-                "visibility": "off"
-            }
-        ]
-    },
-    {
-        "featureType": "poi.medical",
-        "elementType": "geometry",
-        "stylers": [
-            {
-                "color": "#fbd3da"
-            }
-        ]
-    },
-    {
-        "featureType": "poi.park",
-        "elementType": "geometry",
-        "stylers": [
-            {
-                "color": "#bde6ab"
-            }
-        ]
-    },
-    {
-        "featureType": "road",
-        "elementType": "geometry.stroke",
-        "stylers": [
-            {
-                "visibility": "off"
-            }
-        ]
-    },
-    {
-        "featureType": "road",
-        "elementType": "labels",
-        "stylers": [
-            {
-                "visibility": "off"
-            }
-        ]
-    },
-    {
-        "featureType": "road.highway",
-        "elementType": "geometry.fill",
-        "stylers": [
-            {
-                "color": "#ffe15f"
-            }
-        ]
-    },
-    {
-        "featureType": "road.highway",
-        "elementType": "geometry.stroke",
-        "stylers": [
-            {
-                "color": "#efd151"
-            }
-        ]
-    },
-    {
-        "featureType": "road.arterial",
-        "elementType": "geometry.fill",
-        "stylers": [
-            {
-                "color": "#ffffff"
-            }
-        ]
-    },
-    {
-        "featureType": "road.local",
-        "elementType": "geometry.fill",
-        "stylers": [
-            {
-                "color": "black"
-            }
-        ]
-    },
-    {
-        "featureType": "transit.station.airport",
-        "elementType": "geometry.fill",
-        "stylers": [
-            {
-                "color": "#cfb2db"
-            }
-        ]
-    },
-    {
-        "featureType": "water",
-        "elementType": "geometry",
-        "stylers": [
-            {
-                "color": "#a2daf2"
-            }
-        ]
-    }
-],
+			{
+				"featureType": "landscape.man_made",
+				"elementType": "geometry",
+				"stylers": [
+					{
+						"color": "#f7f1df"
+					}
+				]
+			},
+			{
+				"featureType": "landscape.natural",
+				"elementType": "geometry",
+				"stylers": [
+					{
+						"color": "#d0e3b4"
+					}
+				]
+			},
+			{
+				"featureType": "landscape.natural.terrain",
+				"elementType": "geometry",
+				"stylers": [
+					{
+						"visibility": "off"
+					}
+				]
+			},
+			{
+				"featureType": "poi",
+				"elementType": "labels",
+				"stylers": [
+					{
+						"visibility": "off"
+					}
+				]
+			},
+			{
+				"featureType": "poi.business",
+				"elementType": "all",
+				"stylers": [
+					{
+						"visibility": "off"
+					}
+				]
+			},
+			{
+				"featureType": "poi.medical",
+				"elementType": "geometry",
+				"stylers": [
+					{
+						"color": "#fbd3da"
+					}
+				]
+			},
+			{
+				"featureType": "poi.park",
+				"elementType": "geometry",
+				"stylers": [
+					{
+						"color": "#bde6ab"
+					}
+				]
+			},
+			{
+				"featureType": "road",
+				"elementType": "geometry.stroke",
+				"stylers": [
+					{
+						"visibility": "off"
+					}
+				]
+			},
+			{
+				"featureType": "road",
+				"elementType": "labels",
+				"stylers": [
+					{
+						"visibility": "off"
+					}
+				]
+			},
+			{
+				"featureType": "road.highway",
+				"elementType": "geometry.fill",
+				"stylers": [
+					{
+						"color": "#ffe15f"
+					}
+				]
+			},
+			{
+				"featureType": "road.highway",
+				"elementType": "geometry.stroke",
+				"stylers": [
+					{
+						"color": "#efd151"
+					}
+				]
+			},
+			{
+				"featureType": "road.arterial",
+				"elementType": "geometry.fill",
+				"stylers": [
+					{
+						"color": "#ffffff"
+					}
+				]
+			},
+			{
+				"featureType": "road.local",
+				"elementType": "geometry.fill",
+				"stylers": [
+					{
+						"color": "black"
+					}
+				]
+			},
+			{
+				"featureType": "transit.station.airport",
+				"elementType": "geometry.fill",
+				"stylers": [
+					{
+						"color": "#cfb2db"
+					}
+				]
+			},
+			{
+				"featureType": "water",
+				"elementType": "geometry",
+				"stylers": [
+					{
+						"color": "#a2daf2"
+					}
+				]
+			}
+		],
 		mapTypeControl: false,
 		fullscreenControl: false,
 		rotateControl: false,
@@ -166,9 +164,9 @@ function initMap(map_id,locate) {
 		icon: '/images/black_pin.png'
 	});
 };
-//googlt map code end
-//地址搜尋框
+
 var autocomplete;
+
 window.addEventListener('load', () => {
 	var input = document.getElementsByName('input_address')[0];
 	autocomplete = new google.maps.places.Autocomplete(input);
@@ -176,17 +174,16 @@ window.addEventListener('load', () => {
 		fillInAddress();
 	});		
 });
+
 function fillInAddress(){
 	var place = autocomplete.getPlace();
 	document.getElementsByName("lost_address_lng")[0].value = place.geometry.location.lng();
 	document.getElementsByName("lost_address_lat")[0].value = place.geometry.location.lat();
 };
-//googlt map code end
-//ajax 送出表單 code start
+
 document.getElementById("submit").addEventListener('click', function(){	
 	if(document.getElementsByName("input_address")[0].value.length > 0){
 		if(document.getElementsByName("lost_address_lng")[0].value.length == 0){
-			//輸入地址且地址錯誤
 			document.getElementById("error_message").style = "color: red; display: block";
 		}else{
 			ajax_search();
@@ -197,7 +194,7 @@ document.getElementById("submit").addEventListener('click', function(){
 		document.getElementById("error_message").style = "display: none";
 	}
 });
-//ajax 送出表單 code start*/
+
 window.addEventListener('load', () => {
 	const xhr = new XMLHttpRequest();
 	var url = "/lost_record?lost_status=finding";
@@ -213,21 +210,20 @@ window.addEventListener('load', () => {
 	}
 	xhr.send();
 });
+
 $("#image").on("change",function (e) {
 	console.log("已選檔案");
 	var e = e || window.event;
-	//獲取 檔案 個數 取消的時候使用
 	var files = e.target.files;
 	console.log(files[0].name);
 	if(files.length>0){
-		// 獲取檔名 並顯示檔名
 		var fileName = files[0].name;
 		document.getElementById("chose_picture").innerHTML = fileName;
 	}else{
-		//清空檔名
 		document.getElementById("chose_picture").innerHTML = "以照片搜尋";
 	}
 });	
+
 function ajax_search(){
 	var form = $('form')[0];
 	var formData = new FormData(form);
@@ -241,18 +237,11 @@ function ajax_search(){
 		success: function(res){
 			document.getElementById("image").outerHTML = document.getElementById("image").outerHTML;
 			document.getElementById("chose_picture").innerHTML = "以照片搜尋";
-			console.log(res);
 			document.getElementsByClassName("post_container")[0].innerHTML = "";
-			if(res.image_compare == "no_matched"){
-				if(res.string_compare == "no_string"){
-					//圖片沒有比對到, 且沒有使用文字篩選
-					document.getElementById("image_result").innerHTML = "無符合圖片, 建議您以文字條件搜尋! ";	
-				}else{
-					//圖片沒有比對到, 但有使用文字篩選
-					document.getElementById("image_result").innerHTML = "無符合圖片, 以下為文字篩選結果: ";					
-				}
-			}else{
-				document.getElementById("image_result").innerHTML = "";
+			if(res.string_compare == "no_matched"){
+				document.getElementById("image_result").innerHTML = "無符合結果! ";
+			}else if(res.image_compare == "no_matched"){
+				document.getElementById("image_result").innerHTML = "無符合圖片, 以下為符合文字篩選的刊登文章: ";	
 			}
 			append_data(res.data);
 		},
@@ -262,6 +251,7 @@ function ajax_search(){
 		}
 	});	
 }
+
 function append_data(data){
 	for(i=data.length-1; i>=0; i--){
 		let link = document.createElement("a");
@@ -352,8 +342,6 @@ function append_data(data){
 			lat: data[i].lost_location_lat, // 經度
 			lng: data[i].lost_location_lng // 緯度
 		};
-		console.log(map_id);
-		console.log(locate);
 		initMap(map_id,locate);
-	} 
+	}
 }

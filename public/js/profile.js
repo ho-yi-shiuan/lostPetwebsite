@@ -1,9 +1,9 @@
-var user_id;
+let user_id;
 function get_token(){
-	var cookies = document.cookie.split(";");
+	let cookies = document.cookie.split(";");
 	for(i=0;i<cookies.length;i++)
 	{
-		var c = cookies[i].trim();//去空白
+		let c = cookies[i].trim();//去空白
 		if(c.indexOf("user=") >= 0)//回傳找到的第一個
 		{
 			token = c.substring(5,c.length);
@@ -13,7 +13,7 @@ function get_token(){
 }
 
 function insert_mark(){
-	var user_mark = {
+	let user_mark = {
 		user_id: user_id,
 		insert_lng: document.getElementsByName("lost_address_lng")[0].value,
 		insert_lat: document.getElementsByName("lost_address_lat")[0].value,
@@ -74,14 +74,12 @@ window.addEventListener('load', () => {
 	});
 });
 
-// 地址的輸入框，值有變動時執行
 function fill_address(){
-	var place = autocomplete.getPlace();
+	let place = autocomplete.getPlace();
 	document.getElementsByName("lost_address_lng")[0].value = place.geometry.location.lng();
 	document.getElementsByName("lost_address_lat")[0].value = place.geometry.location.lat();
 };
 
-//存取目前位置
 function get_spot(){
 	navigator.geolocation.getCurrentPosition(function(position) {
 		document.getElementsByName("lost_address_lng")[0].value = position.coords.longitude;
@@ -97,7 +95,6 @@ document.getElementById("select_current_spot").addEventListener('click', functio
 
 document.getElementById("submit_mark").addEventListener('click', function(){
 	if(document.getElementsByName("lost_address_lng")[0].value.length == 0){
-		//輸入地址且地址錯誤
 		document.getElementById("error_message").style = "color: white; display: block";
 	}else{
 		insert_mark();
@@ -263,7 +260,6 @@ function append_data(res){
 			profile_lost_content.appendChild(color);
 			let time = document.createElement("div");
 			time.className = "profile_content_li profile_content_li"+res[i].id;
-			//時間格式轉換
 			let time_stamp = new Date(res[i].lost_time).getTime();
 			let format_time = new Date(parseInt(time_stamp)).toLocaleString('chinese', {hour12: true});
 			let minute_time = format_time.slice(0,format_time.length-3);
@@ -358,7 +354,6 @@ function display_close(id){
 
 function append_message(message){
 	if(message.length <= 3){
-		//直接append
 		for(j=message.length-1; j>=0; j--){
 			var send_time = document.createElement("div");
 			send_time.className = "send_time";
@@ -382,7 +377,6 @@ function append_message(message){
 			}
 		}
 	}else{
-		//先append 3筆
 		for(j=message.length-1; j>=message.length-3; j--){
 			var send_time = document.createElement("div");
 			send_time.className = "send_time";
@@ -405,7 +399,6 @@ function append_message(message){
 				document.getElementById("message_content_list").appendChild(content);
 			}				
 		}
-		//剩下display none
 		for(j=message.length-4; j>=0; j--){
 			var send_time = document.createElement("div");
 			send_time.className = "send_time";
@@ -430,7 +423,6 @@ function append_message(message){
 				document.getElementById("message_content_list").appendChild(content);
 			}					
 		}
-		//加一個div, 按下去會把剩下的顯示出來
 		var display_message = document.createElement("div");
 		display_message.id = "display_message";
 		display_message.appendChild(document.createTextNode("查看更多"));
@@ -446,23 +438,22 @@ function append_message(message){
 		});	
 	}
 }
+
 function message_to_room(room_id){
-	var status = {
+	let status = {
 		close_id: room_id
 	};
-	var form = document.getElementById("radio_form"+room_id);
+	const form = document.getElementById("radio_form"+room_id);
 	for(var i=0; i<form.pet_found.length;i++){
 		if(form.pet_found[i].checked){
 			status.close_status = form.pet_found[i].value;
-			console.log("form radio status = "+form.pet_found[i].value);
 		}
 	}
-	//整個ajax 拿掉, 改成用socket做
-	var user_info = {
+	const user_info = {
 		user_name: document.getElementsByClassName("nameline")[0].innerHTML,
 		room_id: room_id
 	}
-	var socket = io.connect();
+	const socket = io.connect();
 	socket.on('connect', function (){
 		socket.emit('join', user_info);
 	});
@@ -474,7 +465,6 @@ function message_to_room(room_id){
 	};
 	socket.emit('message_to_backend', data);
 	socket.on('redirect', function(obj){
-		console.log("update_success!");
 		document.location.href = "/profile.html";
 	})
 }
