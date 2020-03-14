@@ -124,7 +124,7 @@ app.post('/', upload.single('image'), async function(req, res){
 					}					
 				}
 			})
-			client.del("post_list", function (err, success) {
+			client.del("finding_list", function (err, success) {
 				if(err){
 					throw err;
 				}
@@ -140,22 +140,24 @@ app.post('/', upload.single('image'), async function(req, res){
 
 app.get('/', async function(req, res){
 	try{
-		client.get("post_list",async function(err, result){
+		let list_type;
+		if(req.query.lost_status == "finding"){
+			list_type = "finding_list";
+		}else{
+			list_type = "success_list";
+		}
+		client.get(list_type, async function(err, result){
 			if(err){
 				throw err;
 			}
 			else if(result !== null)//get data from cache
 			{
-				console.log("found post list of index page in cache");
+				console.log("found "+list_type+" of index page in cache");
 				res.json(JSON.parse(result));
 			}
 			else//get data from db and update cache
 			{
-				if(req.query.post_type){
-					select_lost_record = "SELECT * from lost_pet where lost_status = \""+req.query.lost_status+"\" AND post_type = \""+req.query.post_type+"\";";			
-				}else{
-					select_lost_record = "SELECT * from lost_pet where lost_status = \""+req.query.lost_status+"\" ;"		
-				}
+				let select_lost_record = "SELECT * from lost_pet where lost_status = \""+req.query.lost_status+"\";";
 				const lost_record = await lost_data.get_all_lost(select_lost_record);
 				let lost_record_array = [];
 				for(i=0; i<lost_record.length; i++){
@@ -183,7 +185,7 @@ app.get('/', async function(req, res){
 					data:lost_record_array
 				}
 				res.json(data);
-				client.set("post_list", JSON.stringify(data), redis.print);					
+				client.set(list_type, JSON.stringify(data), redis.print);					
 			}
 		})
 	}catch(error){

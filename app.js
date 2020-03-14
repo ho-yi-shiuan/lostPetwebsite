@@ -144,7 +144,13 @@ io.on('connection', async function(socket){
 	socket.on("close_room",async function(obj){
 		try{
 			await chat.send_close_message(obj.close_status,obj.close_id).then(function(){
-				io.emit("redirect");
+				client.del("finding_list", function (err, success) {
+					if(err){
+						throw err;
+					}
+					console.log("delete success lost record in cache");
+					io.emit("redirect");
+				});
 			})
 		}catch(error){
 			console.log(error);

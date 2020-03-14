@@ -158,7 +158,7 @@ function initMap() {
 			lost_status: "end_found"
 		}
 		const xhr = new XMLHttpRequest();
-		var url = "/lost_record?post_type=lost&lost_status=end_found";
+		var url = "/lost_record?lost_status=end_found";
 		xhr.open("get", url);
 		xhr.onload = function(){
 			var pets = JSON.parse(this.response);
