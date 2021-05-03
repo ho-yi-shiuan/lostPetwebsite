@@ -1,6 +1,5 @@
 # Way back home
 This is a website built to help lost pet go home. User can post aricles when his pet is lost or when he finds a lost pet.
-Website URL: https://yssites.com/
 
 ## Technologies
 #### Backend
