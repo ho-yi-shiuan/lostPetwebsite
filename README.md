@@ -13,7 +13,6 @@ This is a website built to help lost pet go home. User can post aricles when his
 * JavaScript
 * AJAX
 #### Database
-* Database
 * MySQL
 * Redis (Cache)
 #### Cloud Service (AWS)
